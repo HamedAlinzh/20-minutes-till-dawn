@@ -58,6 +58,7 @@ public class ChooseAbilityScreen implements Screen {
         System.out.println("Ability 2: " + abilityNames.get(1));
         System.out.println("Ability 3: " + abilityNames.get(2));
         this.pausedBg = pausedBg;
+        Gdx.input.setCursorCatched(false);
     }
     @Override
     public void show() {

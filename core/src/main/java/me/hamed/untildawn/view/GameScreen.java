@@ -5,16 +5,14 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.ScreenUtils;
@@ -24,6 +22,7 @@ import me.hamed.untildawn.model.GameSaves.*;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Random;
 
 public class GameScreen implements Screen {
     public float SHOOT_WAIT_TIME = 0.25f;
@@ -66,10 +65,16 @@ public class GameScreen implements Screen {
 
 
     public Weapon weapon;
+    OrthographicCamera camera;
+
 
     private Animation<TextureRegion> idleAnimation;
     private Animation<TextureRegion> runAnimation;
+    private Animation<TextureRegion> damage;
     private float animationTimer = 0f;
+
+    private boolean playingDamageAnimation = false;
+    private float stateTime = 0f;
 
     public float speed = 200f;
     private float speedAbilityTimer = 0;
@@ -78,6 +83,7 @@ public class GameScreen implements Screen {
     private boolean isRunning;
 
     private float playerDrawX, playerDrawY;
+    private boolean reloadingSound = false;
 
 
     private float enemySpawnTimer = 0f;
@@ -104,7 +110,7 @@ public class GameScreen implements Screen {
     Texture reloadBar = new Texture(Gdx.files.internal("Images/Sprite/T_ReloadBar_1.png"));
     float reloadBarX = RELOAD_BAR_X;
     float reloadBarY = RELOAD_BAR_Y;
-    boolean autoAim = true;
+    boolean autoAim = false;
 
 
     private boolean playAsGuest;
@@ -126,8 +132,10 @@ public class GameScreen implements Screen {
         this.playAsGuest = playAsGuest;
         idleAnimation = new Animation<>(0.1f, GameAssetsManager.getInstance().getIdleFrames(player.getHeroName()));
         runAnimation = new Animation<>(0.1f, GameAssetsManager.getInstance().getRunFrames(player.getHeroName()));
+        damage = new Animation<>(0.1f, GameAssetsManager.getInstance().getIdleFrames("Damage"));
         idleAnimation.setPlayMode(Animation.PlayMode.LOOP);
         runAnimation.setPlayMode(Animation.PlayMode.LOOP);
+        camera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
     }
 
     private void startNewGame() {
@@ -148,6 +156,7 @@ public class GameScreen implements Screen {
         gameInputProcessor = Gdx.input.getInputProcessor(); // Save it
         Gdx.input.setInputProcessor(gameInputProcessor);
 
+
         ShaderProgram.pedantic = false;
         grayscaleShader = new ShaderProgram(
             Gdx.files.internal("default.vert"),
@@ -167,6 +176,12 @@ public class GameScreen implements Screen {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         handleInput(delta);
+
+        if (autoAim) {
+            Gdx.input.setCursorCatched(true);
+        } else {
+            Gdx.input.setCursorCatched(false);
+        }
 
         Animation<TextureRegion> currentAnimation = isRunning ? runAnimation : idleAnimation;
         TextureRegion currentFrame = currentAnimation.getKeyFrame(animationTimer);
@@ -214,11 +229,30 @@ public class GameScreen implements Screen {
 
         // Calculate angle to nearest enemy once
         float angleRadians = 0f;
-        if (nearestEnemy != null) {
-            float dx = nearestEnemy.getX() - playerDrawX;
-            float dy = nearestEnemy.getY() - playerDrawY;
+
+        if (autoAim) {
+            if (nearestEnemy != null) {
+                float dx = nearestEnemy.getX() - playerDrawX;
+                float dy = nearestEnemy.getY() - playerDrawY;
+                angleRadians = (float) Math.atan2(dy, dx);
+            }
+        } else {
+            Vector3 mouse = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
+//            camera.unproject(mouse); // convert to world coordinates
+
+            float dx = playerDrawX - mouse.x;
+            float dy = playerDrawY - mouse.y;
             angleRadians = (float) Math.atan2(dy, dx);
+            angleRadians += MathUtils.PI;
+//            System.out.println("Mouse world: " + mouse.x + ", " + mouse.y + "   " + playerDrawX + ", " + playerDrawY);
+//            System.out.println("Player: " + playerDrawX + ", " + playerDrawY);
+//            System.out.println("Angle (deg): " + Math.toDegrees(angleRadians));
+
+
         }
+
+
+
         float angleDegrees = (float) Math.toDegrees(angleRadians);
 
         ArrayList<Monster> monstersToRemove = new ArrayList<>();
@@ -283,7 +317,9 @@ public class GameScreen implements Screen {
 
         shootTimer += delta;
         if (reloadTimer >= weapon.getReloadTime()) {
+
             reloading = false;
+            reloadingSound = false;
             firedBullets = 0;
             reloadTimer = 0f;
             reloadBarX = RELOAD_BAR_X;
@@ -296,50 +332,69 @@ public class GameScreen implements Screen {
             }
         }
 
-        if (!KeyBindings.isMouse(KeyBindings.SHOOT)) {
-            if (Gdx.input.isKeyPressed(KeyBindings.get(KeyBindings.SHOOT)) &&
-                shootTimer >= SHOOT_WAIT_TIME &&
-                firedBullets < weapon.getMaxAmmo()) {
+        if (reloading && !reloadingSound) {
+            GameAssetsManager.getInstance().getSounds("Reload").play(Main.getSoundEffects());
+            reloadingSound = true;
+        }
 
-                if (!reloading) {
-                    shootTimer = 0;
-//                    int projectileCount = weapon.getProjectile(); // e.g., 3 bullets
-                    float spreadAngle = 10f; // degrees between each bullet
-                    float baseAngle = bulletDirection.angleDeg(); // get the base angle
 
-                    for (int i = 0; i < weapon.getProjectile(); i++) {
-                        // Calculate angle offset
-                        float offset = (i - (weapon.getProjectile() - 1) / 2f) * spreadAngle;
-                        float finalAngle = baseAngle + offset;
+        Vector3 mouseScreen = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
+        camera.unproject(mouseScreen); // get actual position in world space
 
-                        // Create a new direction vector from final angle
-                        Vector2 newDirection = new Vector2(1, 0).setAngleDeg(finalAngle).nor();
+        Vector2 target = new Vector2(mouseScreen.x, mouseScreen.y);
+        Vector2 origin = new Vector2(playerDrawX, playerDrawY);
+        Vector2 directionAim = target.sub(origin).nor();
 
-//                        // Optional: slight horizontal offset in position
-//                        float offsetX = (i - (projectileCount - 1) / 2f) * 10f;
-//                        float spawnX = bulletX + offsetX;
-//                        float spawnY = bulletY;
 
-                        Bullet bullet = new Bullet(bulletX, bulletY, newDirection);
-                        bullets.add(bullet);
+        if (autoAim) {
+            if (!KeyBindings.isMouse(KeyBindings.SHOOT)) {
+                if (Gdx.input.isKeyPressed(KeyBindings.get(KeyBindings.SHOOT)) &&
+                    shootTimer >= SHOOT_WAIT_TIME &&
+                    firedBullets < weapon.getMaxAmmo()) {
+
+                    if (!reloading) {
+                        shootTimer = 0;
+                        float spreadAngle = 7.5f;
+                        float baseAngle;
+                        if (autoAim) {
+                            baseAngle = bulletDirection.angleDeg();
+                        } else {
+                            baseAngle = directionAim.angleDeg();
+                        }
+
+                        for (int i = 0; i < weapon.getProjectile(); i++) {
+                            float offset = (i - (weapon.getProjectile() - 1) / 2f) * spreadAngle;
+                            float finalAngle = baseAngle + offset;
+                            Vector2 newDirection = new Vector2(1, 0).setAngleDeg(finalAngle).nor();
+                            Bullet bullet = new Bullet(bulletX, bulletY, newDirection);
+                            bullets.add(bullet);
+                        }
+                        GameAssetsManager.getInstance().getSounds("Shoot").play(Main.getSoundEffects());
+                        firedBullets++;
                     }
-
-                    firedBullets++;
                 }
-            }
-        } else {
-            if (Gdx.input.isButtonPressed(KeyBindings.get(KeyBindings.SHOOT)) && shootTimer >= SHOOT_WAIT_TIME && firedBullets < weapon.getMaxAmmo()) {
-                if (!reloading) {
+            } else {
+                if (Gdx.input.isButtonPressed(Input.Buttons.LEFT) && shootTimer >= SHOOT_WAIT_TIME && firedBullets < weapon.getMaxAmmo()) {
+                    if (!reloading) {
+                        shootTimer = 0;
+                        float spreadAngle = 7.5f;
+                        float baseAngle;
+                        if (autoAim) {
+                            baseAngle = bulletDirection.angleDeg();
+                        } else {
+                            baseAngle = directionAim.angleDeg();
+                        }
 
-                    shootTimer = 0;
-                    Bullet bullet;
-                    if (autoAim) {
-                        bullet = new Bullet(bulletX, bulletY, bulletDirection);
-                    } else {
-                        bullet = new Bullet(bulletX, bulletY, bulletDirection);
+                        for (int i = 0; i < weapon.getProjectile(); i++) {
+                            float offset = (i - (weapon.getProjectile() - 1) / 2f) * spreadAngle;
+                            float finalAngle = baseAngle + offset;
+                            Vector2 newDirection = new Vector2(1, 0).setAngleDeg(finalAngle).nor();
+                            Bullet bullet = new Bullet(bulletX, bulletY, newDirection);
+                            bullets.add(bullet);
+                        }
+                        GameAssetsManager.getInstance().getSounds("Shoot").play(Main.getSoundEffects());
+                        firedBullets++;
                     }
-                    bullets.add(bullet);
-                    firedBullets++; // TODO ??????
                 }
             }
         }
@@ -349,6 +404,7 @@ public class GameScreen implements Screen {
             for (Monster monster : monsters) {
                 if (monster.getBounds().overlaps(bullet.getBounds())) {
                     monster.setHb((int) (monster.getHb() - weapon.getDamage()));
+                    GameAssetsManager.getInstance().getSounds("Damage").play(Main.getSoundEffects() * 0.5f);
                     Vector2 direction = new Vector2(bullet.getVelocity().x, bullet.getVelocity().y);
 
                     if (direction.len2() == 0) {
@@ -387,6 +443,9 @@ public class GameScreen implements Screen {
             xpDrop.moveRelativeToPlayer(playerDx, playerDy);
             if (playerRect.overlaps(xpDrop.getBounds())) {
                 currentXp += 12; // TODO: 3 ta
+                Random random = new Random();
+                int x = random.nextInt(6);
+                GameAssetsManager.getInstance().getXpSounds().get(x).play(Main.getSoundEffects());
 
                 while (currentXp >= xpToNextLevel) {
                     currentXp -= xpToNextLevel;
@@ -420,11 +479,14 @@ public class GameScreen implements Screen {
             invincible = false;
             invincibility = 0;
         }
+        updateDamage(delta);
         for (Monster monster : monsters) {
             if (monster instanceof EyeBat) {
                 for (EyeBatBullet bullet : ((EyeBat) monster).getBullets()) {
                     if (bullet.getBounds().overlaps(playerRect) && !invincible) {
                         heart.setHealth(heart.getHealth() - 1);
+                        GameAssetsManager.getInstance().getSounds("Damage").play(Main.getSoundEffects());
+                        playingDamageAnimation = true;
                         invincible = true;
                         bullet.deactivate();
                     }
@@ -432,6 +494,7 @@ public class GameScreen implements Screen {
             }
             if (monster.getBounds().overlaps(playerRect) && !invincible) {
                 heart.setHealth(heart.getHealth() - 1);
+                GameAssetsManager.getInstance().getSounds("Damage").play(Main.getSoundEffects());
                 Vector2 direction = new Vector2(playerDrawX - monster.getX(), playerDrawY - monster.getY());
 
                 if (direction.len2() == 0) {
@@ -441,6 +504,7 @@ public class GameScreen implements Screen {
                 direction.nor();
                 float pushAmount = 200f;
                 monster.moveBy(-direction.x * pushAmount / 2, -direction.y * pushAmount / 2);
+                playingDamageAnimation = true;
                 invincible = true;
             }
         }
@@ -451,7 +515,9 @@ public class GameScreen implements Screen {
 
         for (Tree tree : trees) {
             if (tree.getBounds().overlaps(playerRect) && !invincible) {
+                playingDamageAnimation = true;
                 heart.setHealth(heart.getHealth() - 1);
+                GameAssetsManager.getInstance().getSounds("Damage").play(Main.getSoundEffects());
                 invincible = true;
             }
         }
@@ -545,7 +611,7 @@ public class GameScreen implements Screen {
             for (Tree tree : trees) {
                 if (tree.getBounds().overlaps(bullet.getBounds())) {
                     if (!tree.isPlayAnimation()) {
-                        tree.playAnimation(); // Play animation again on hit
+                        tree.playAnimation();
                     }
                     bullet.deactivate();
                 }
@@ -583,6 +649,8 @@ public class GameScreen implements Screen {
                 barY + verticalOffset
             );
         }
+
+        drawDamage(batch);
         String timeString = formatTime(countdownTime);
         GlyphLayout layout = new GlyphLayout(timerFont, timeString);
         float x = Gdx.graphics.getWidth() - layout.width * 2;
@@ -615,10 +683,14 @@ public class GameScreen implements Screen {
 
         shapeRenderer.end();
 
-        if (!playAsGuest && Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
             saveGame();
+            Pixmap screenshotPixmap = ScreenUtils.getFrameBufferPixmap(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+            Texture pausedBg = new Texture(screenshotPixmap);
+            screenshotPixmap.dispose();
             Gdx.app.log("Save", "Game saved successfully!");
-            Main.getMain().setScreen(new MainMenu(GameAssetsManager.getInstance().getSkin()));
+            GameAssetsManager.getInstance().setPauseBg(pausedBg);
+            Main.getMain().setScreen(new PauseMenu(GameAssetsManager.getInstance().getSkin(), this, pausedBg));
         }
         if (Gdx.input.isKeyJustPressed(Input.Keys.T)) {
             countdownTime -= 60;
@@ -633,6 +705,9 @@ public class GameScreen implements Screen {
                 heart.setHealth(heart.getHealth() + 1);
             }
         }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.SHIFT_LEFT)) {
+            switchAutoAim();
+        }
 
 
         if (showLevelUpUI) {
@@ -641,6 +716,15 @@ public class GameScreen implements Screen {
             Texture pausedBg = new Texture(screenshotPixmap);
             screenshotPixmap.dispose();
             Main.getMain().setScreen(new ChooseAbilityScreen(GameAssetsManager.getInstance().getSkin(), this, pausedBg));
+        }
+
+
+        if (heart.getHealth() <= 0 || timeUp || countdownTime > gameTime) {
+            Gdx.input.setCursorCatched(true);
+            Pixmap screenshotPixmap = ScreenUtils.getFrameBufferPixmap(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+            Texture pausedBg = new Texture(screenshotPixmap);
+            screenshotPixmap.dispose();
+            Main.getMain().setScreen(new GameOverMenu(pausedBg, countdownTime, kills, playAsGuest, heart.getHealth()));
         }
     }
 
@@ -732,7 +816,7 @@ public class GameScreen implements Screen {
         return nearestEnemy;
     }
 
-    private String formatTime(float timeSeconds) {
+    public static String formatTime(float timeSeconds) {
         int minutes = (int)(timeSeconds / 60);
         int seconds = (int)(timeSeconds % 60);
         return String.format("%02d:%02d", minutes, seconds);
@@ -802,6 +886,10 @@ public class GameScreen implements Screen {
         data.reloading = reloading;
         data.worldX = worldX;
         data.worldY = worldY;
+        data.fireRate = SHOOT_WAIT_TIME;
+        data.maxAmo = weapon.getMaxAmmo();
+        data.reloadRate = weapon.getReloadTime();
+        data.projectiles = weapon.getProjectile();
 
         Json json = new Json();
         FileHandle file = Gdx.files.local("savegame.json");
@@ -889,6 +977,10 @@ public class GameScreen implements Screen {
             eyeBatSpawnInterval = data.eyeBatSpawnInterval;
             gameTime = data.gameTime;
             kills = data.kills;
+            SHOOT_WAIT_TIME = data.fireRate;
+            weapon.setMaxAmmo(data.maxAmo);
+            weapon.setReloadTime(data.reloadRate);
+            weapon.setProjectile(data.projectiles);
 
             for (XpDropSave xpDropSave : data.xpDrops) {
                 XpDrop xpDrop = new XpDrop(xpDropSave.x, xpDropSave.y);
@@ -911,6 +1003,27 @@ public class GameScreen implements Screen {
                     EyeBat monster = new EyeBat(monsterSave.x, monsterSave.y);
                     monsters.add(monster);
                 }
+            }
+        }
+    }
+
+    private void switchAutoAim() {
+        autoAim = !autoAim;
+    }
+
+    public void drawDamage(Batch batch) {
+        if (playingDamageAnimation) {
+            TextureRegion currentFrame = damage.getKeyFrame(stateTime);
+            batch.draw(currentFrame, playerDrawX, playerDrawY, currentFrame.getRegionWidth() / 2f, currentFrame.getRegionHeight() / 2f);
+        }
+    }
+
+    public void updateDamage(float delta) {
+        if (playingDamageAnimation) {
+            stateTime += delta;
+            if (damage.isAnimationFinished(stateTime)) {
+                playingDamageAnimation = false;
+                stateTime = 0;
             }
         }
     }

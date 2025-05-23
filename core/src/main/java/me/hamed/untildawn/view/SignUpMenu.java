@@ -5,10 +5,13 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.scenes.scene2d.utils.FocusListener;
+import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import me.hamed.untildawn.Main;
@@ -21,14 +24,16 @@ import java.io.IOException;
 public class SignUpMenu implements Screen {
     private int screenWidth, screenHeight;
     private Stage stage;
-    private static Table table;
-    private static TextField field;
-    private static TextField passField;
-    private static Label label;
-    private static TextButton button;
-    private static TextButton loginButton;
-    private static TextButton guestButton;
-    private static Label avatarLabel;
+    private Table table;
+    private TextField field;
+    private TextField passField;
+    private TextField questionField;
+
+    private  Label label;
+    private  TextButton button;
+    private  TextButton loginButton;
+    private  TextButton guestButton;
+    private  Label avatarLabel;
     int buttonCheck = 4;
     private BitmapFont font;
     private final Texture background;
@@ -36,7 +41,7 @@ public class SignUpMenu implements Screen {
     private Label errorLabel;
     private int selectedAvatar = -1; // 0 = avatar1, 1 = avatar2, etc.
     public static Texture avatar1Texture = new Texture(Gdx.files.internal("0.png"));
-    private static Texture avatar2Texture = new Texture(Gdx.files.internal("1.png"));
+    public static Texture avatar2Texture = new Texture(Gdx.files.internal("1.png"));
     public static Texture avatar3Texture = new Texture(Gdx.files.internal("2.png"));
     public static Texture avatar4Texture = new Texture(Gdx.files.internal("3.png"));
 
@@ -48,6 +53,7 @@ public class SignUpMenu implements Screen {
     public SignUpMenu(Skin skin) {
         table = new Table();
         field = new TextField("username", skin);
+        questionField = new TextField("What is favorite breakfast fish?", skin);
         label = new Label("Sign Up Menu", skin);
         avatarLabel = new Label("Choose Your Avatar", skin);
         loginButton = new TextButton("Login", skin);
@@ -65,18 +71,21 @@ public class SignUpMenu implements Screen {
         if (Main.backgroundMusic == null) {
             Main.backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal("SFX/AudioClip/Pretty Dungeon LOOP.wav"));
             Main.backgroundMusic.setLooping(true);
-            Main.backgroundMusic.setVolume(1f);
+            Main.backgroundMusic.setVolume(Main.getSoundVolume());
             Main.backgroundMusic.play();
         }
         stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(stage);
         table.setFillParent(true);
-        table.right().padRight(Gdx.graphics.getWidth() / 8f);
+        table.right().padRight(Gdx.graphics.getWidth() / 8f).padBottom(Gdx.graphics.getHeight() / 15f);
         table.add(label);
         table.row().pad(20);
         table.add(field).width(300);
         table.row().pad(20);
         table.add(passField).width(300);
+        table.row().pad(20);
+        questionField.setAlignment(Align.center);
+        table.add(questionField).width(500);
         table.row().pad(20);
         table.add(button);
         errorLabel.setColor(Color.RED);
@@ -160,6 +169,15 @@ public class SignUpMenu implements Screen {
             }
         });
 
+        passField.addListener(new FocusListener() {
+            @Override
+            public void keyboardFocusChanged(FocusEvent event, Actor actor, boolean focused) {
+                if (!focused && passField.getText().isEmpty()) {
+                    passField.setText("password");
+                }
+            }
+        });
+
         field.addListener(new ClickListener() {
             boolean cleared = false;
 
@@ -168,6 +186,36 @@ public class SignUpMenu implements Screen {
                 if (!cleared) {
                     field.setText("");
                     cleared = true;
+                }
+            }
+        });
+
+        field.addListener(new FocusListener() {
+            @Override
+            public void keyboardFocusChanged(FocusEvent event, Actor actor, boolean focused) {
+                if (!focused && field.getText().isEmpty()) {
+                    field.setText("username");
+                }
+            }
+        });
+
+        questionField.addListener(new ClickListener() {
+            boolean cleared = false;
+
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                if (!cleared) {
+                    questionField.setText("");
+                    cleared = true;
+                }
+            }
+        });
+
+        questionField.addListener(new FocusListener() {
+            @Override
+            public void keyboardFocusChanged(FocusEvent event, Actor actor, boolean focused) {
+                if (!focused && questionField.getText().isEmpty()) {
+                    questionField.setText("What is favorite breakfast fish?");
                 }
             }
         });

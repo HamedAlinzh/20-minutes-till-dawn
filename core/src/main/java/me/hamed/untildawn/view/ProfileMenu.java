@@ -13,6 +13,7 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import me.hamed.untildawn.Main;
 import me.hamed.untildawn.controller.ProfileMenuController;
 import me.hamed.untildawn.controller.SignUpMenuController;
+import me.hamed.untildawn.model.GameAssetsManager;
 
 import java.io.IOException;
 
@@ -30,6 +31,7 @@ public class ProfileMenu implements Screen {
     private final Texture background;
     private int selectedAvatar = -1;
     private TextButton deleteAccountButton;
+    private TextButton back;
     private final Texture raven;
 
     Texture avatar1Texture = new Texture(Gdx.files.internal("0.png"));
@@ -54,9 +56,9 @@ public class ProfileMenu implements Screen {
         confirmPassword = new TextField("Repeat New Password", skin);
         confirmUsername = new Button(skin);
         deleteAccountButton = new TextButton("Delete Account", skin);
-        deleteAccountButton.getLabel().setFontScale(0.5f);
-        deleteAccountButton.setWidth(250);
-        deleteAccountButton.setHeight(100);
+        back = new TextButton("Back", skin);
+        deleteAccountButton.getLabel().setFontScale(0.75f);
+        deleteAccountButton.setWidth(350);
         raven = new Texture("Images/Sprite/T_Raven_Portrait.png");
         background = new Texture("ChatGPT Image May 5, 2025, 01_30_18 PM.png");
     }
@@ -82,7 +84,9 @@ public class ProfileMenu implements Screen {
         table.add(confirmUsername);
         table.row().pad(10);
         table.add(errorLabel);
-        deleteAccountButton.setX(Gdx.graphics.getWidth() / 40f);
+        back.setX(Gdx.graphics.getWidth() / 40f);
+        back.setY(Gdx.graphics.getHeight() * 17 / 20f + 20);
+        deleteAccountButton.setX(Gdx.graphics.getWidth() / 30f + back.getWidth());
         deleteAccountButton.setY(Gdx.graphics.getHeight() * 17 / 20f + 20);
         Table avatarTable = new Table();
         avatarTable.left().bottom().padBottom(Gdx.graphics.getHeight() / 9f).padLeft(Gdx.graphics.getWidth() / 6.5f);
@@ -124,6 +128,7 @@ public class ProfileMenu implements Screen {
             }
         });
         stage.addActor(deleteAccountButton);
+        stage.addActor(back);
         stage.addActor(avatarTable);
         stage.addActor(table);
     }
@@ -191,6 +196,10 @@ public class ProfileMenu implements Screen {
 
         if (deleteAccountButton.isChecked()) {
             ProfileMenuController.deleteAccount();
+        }
+
+        if (back.isChecked()) {
+            Main.getMain().setScreen(new MainMenu(GameAssetsManager.getInstance().getSkin()));
         }
 
         stage.act(delta);

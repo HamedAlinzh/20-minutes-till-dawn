@@ -25,20 +25,24 @@ public class SettingMenu implements Screen {
     private TextButton autoReload;
     private TextButton blackAndWhite;
     private TextButton back;
+    private GameScreen gameScreen;
+    private boolean inGame;
 
 
-    public SettingMenu(Skin skin) {
+    public SettingMenu(Skin skin, boolean inGame, GameScreen gameScreen) {
         volumeSlider = new Slider(0f, 1f, 0.01f, false, skin);
-        volumeSlider.setValue(0.5f); // Default volume (50%)
+        volumeSlider.setValue(Main.getSoundVolume()); // Default volume (50%)
+        this.inGame = inGame;
         table = new Table(skin);
         music = new Label("Music", skin);
         soundEffect = new Label("Sound Effects", skin);
         soundEffectsVolumeSlider = new Slider(0f, 1f, 0.01f, false, skin);
-        soundEffectsVolumeSlider.setValue(0.5f);
+        soundEffectsVolumeSlider.setValue(Main.getSoundEffects());
         keyboard = new TextButton("Change Keyboard", skin);
         autoReload = new TextButton("Auto Reload: " + (Main.getMain().isAutoReload() ? "ON" : "OFF"), skin);
         blackAndWhite = new TextButton("Black and White:" + (Main.getMain().isBlackAndWhite() ? "ON" : "OFF"), skin);
         back = new TextButton("Back", skin);
+        this.gameScreen = gameScreen;
     }
 
     @Override
@@ -53,11 +57,13 @@ public class SettingMenu implements Screen {
                     Main.backgroundMusic.stop();
                     Main.backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal("SFX/AudioClip/Pretty Dungeon LOOP.wav"));
                     Main.backgroundMusic.play();
+                    Main.backgroundMusic.setVolume(Main.getSoundVolume());
                     Main.backgroundMusic.setLooping(true);
                 } else if (item.equals("Cristal Castles Empathy")) {
                     Main.backgroundMusic.stop();
                     Main.backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal("SFX/Crystal Castles - Empathy.mp3"));
                     Main.backgroundMusic.play();
+                    Main.backgroundMusic.setVolume(Main.getSoundVolume());
                     Main.backgroundMusic.setLooping(true);
                 }
             }
@@ -75,6 +81,7 @@ public class SettingMenu implements Screen {
                 float volume = volumeSlider.getValue();
                 if (Main.backgroundMusic != null) {
                     Main.backgroundMusic.setVolume(volume);
+                    Main.setSoundVolume(volume);
                 }
             }
         });
@@ -85,7 +92,7 @@ public class SettingMenu implements Screen {
         soundEffectsVolumeSlider.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                float volume = volumeSlider.getValue();
+                float volume = soundEffectsVolumeSlider.getValue();
                 Main.setSoundEffects(volume);
             }
         });
@@ -126,10 +133,13 @@ public class SettingMenu implements Screen {
         stage.draw();
 
         if (back.isChecked()) {
-            Main.getMain().setScreen(new MainMenu(GameAssetsManager.getInstance().getSkin()));
+            if (inGame) {
+                Main.getMain().setScreen(new PauseMenu(GameAssetsManager.getInstance().getSkin(), gameScreen, GameAssetsManager.getInstance().getPauseBg()));
+            } else
+                Main.getMain().setScreen(new MainMenu(GameAssetsManager.getInstance().getSkin()));
         }
 
-        if (keyboard.isChecked()) {
+        if (!inGame && keyboard.isChecked()) {
             Main.getMain().setScreen(new KeyBoardBindingScreen(GameAssetsManager.getInstance().getSkin()));
         }
     }

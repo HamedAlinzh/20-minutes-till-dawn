@@ -224,7 +224,10 @@ public class PreGameMenu implements Screen {
         });
 
         if (backButton.isChecked()) {
-            Main.getMain().setScreen(new MainMenu(GameAssetsManager.getInstance().getSkin()));
+            if (playAsGuest) {
+                Main.getMain().setScreen(new SignUpMenu(GameAssetsManager.getInstance().getSkin()));
+            } else
+                Main.getMain().setScreen(new MainMenu(GameAssetsManager.getInstance().getSkin()));
         }
 
         stage.act(delta);

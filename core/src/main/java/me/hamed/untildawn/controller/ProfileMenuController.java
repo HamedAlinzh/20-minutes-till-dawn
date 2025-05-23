@@ -19,7 +19,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 public class ProfileMenuController {
-    private static final String USER_FILE = "/home/hamed/Documents/UntilDawn/assets/jsonFiles/users.json";
+    private static final String USER_FILE = "/home/hamed/Documents/20-Minutes-Till-Dawn/assets/jsonFiles/users.json";
 
     public static void changeProfile(String newUsername, String newPass, String repeatedNewPass, Label errorLabel, int selectedAvatar) throws IOException {
         User user = Main.getMain().getGame().getLoggedInUser();

@@ -18,7 +18,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 public class LoginMenuController {
-    private static final String USER_FILE = "/home/hamed/Documents/UntilDawn/assets/jsonFiles/users.json";
+    private static final String USER_FILE = "/home/hamed/Documents/20-Minutes-Till-Dawn/assets/jsonFiles/users.json";
     public static void login(TextField passwordF, TextField usernameF, Label errorLabel) throws IOException {
         String username = usernameF.getText().trim();
         String password = passwordF.getText().trim();
@@ -41,7 +41,7 @@ public class LoginMenuController {
                     }
                     Texture avatarTexture = new Texture(avatarId + ".png");
                     Image image = new Image(avatarTexture);
-                    Main.getMain().getGame().setLoggedInUser(new User(username, password, image, score));
+                    Main.getMain().getGame().setLoggedInUser(new User(username, password, image, score, avatarId));
                     Main.getMain().setScreen(new MainMenu(GameAssetsManager.getInstance().getSkin()));
                     return;
                 } else {

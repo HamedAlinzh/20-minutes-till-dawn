@@ -32,6 +32,7 @@ public class LoginMenu implements Screen {
     private final Texture background;
     private final Texture abby;
     private int buttonCheck;
+    private TextButton backButton;
     private Label errorLabel;
     private CheckBox checkBox;
 
@@ -48,6 +49,7 @@ public class LoginMenu implements Screen {
         abby = new Texture("Images/Sprite/T_Abby_Portrait.png");
         errorLabel = new Label("", skin);
         checkBox = new CheckBox("", skin);
+        backButton = new TextButton("Back", skin);
     }
 
 
@@ -119,6 +121,8 @@ public class LoginMenu implements Screen {
             }
         });
 
+        backButton.setPosition(40, Gdx.graphics.getHeight() - 1.2f * backButton.getHeight());
+        stage.addActor(backButton);
         stage.addActor(table);
         Gdx.input.setInputProcessor(stage);
     }
@@ -136,6 +140,9 @@ public class LoginMenu implements Screen {
         Main.batch.draw(abby, width / 1.75f, height / 8f, width / 3f, height / 1.5f);
         Main.batch.end();
         if (Gdx.input.isKeyPressed(Input.Keys.ESCAPE)) {
+            Main.getMain().setScreen(new SignUpMenu(GameAssetsManager.getInstance().getSkin()));
+        }
+        if (backButton.isChecked()) {
             Main.getMain().setScreen(new SignUpMenu(GameAssetsManager.getInstance().getSkin()));
         }
         stage.act(delta);

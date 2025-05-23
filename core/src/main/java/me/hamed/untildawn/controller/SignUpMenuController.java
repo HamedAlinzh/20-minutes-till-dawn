@@ -18,7 +18,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.regex.Pattern;
 
 public class SignUpMenuController {
-    private static final String USER_FILE = "/home/hamed/Documents/UntilDawn/assets/jsonFiles/users.json";
+    private static final String USER_FILE = "/home/hamed/Documents/20-Minutes-Till-Dawn/assets/jsonFiles/users.json";
     // At least one of the following: @ _ ( ) * & % $ # And lower case and upper case
     public static final Pattern SPECIAL_CHAR_PATTERN =
         Pattern.compile(".*[!_()*&%$#@].*");

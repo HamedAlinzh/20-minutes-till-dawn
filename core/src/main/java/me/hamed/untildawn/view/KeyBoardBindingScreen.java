@@ -42,13 +42,6 @@ public class KeyBoardBindingScreen implements Screen {
         reloadLabel = new Label("Reload", skin);
         shootLabel = new Label("Shoot", skin);
         back = new TextButton("Back", skin);
-        TextField.TextFieldFilter oneCharFilter = new TextField.TextFieldFilter() {
-            @Override
-            public boolean acceptChar(TextField textField, char c) {
-                // Only allow if no character exists yet
-                return textField.getText().length() == 0;
-            }
-        };
     }
 
     @Override
@@ -90,17 +83,19 @@ public class KeyBoardBindingScreen implements Screen {
                 String text = shoot.getText().toUpperCase();
                 if (text.equals("MOUSE") || text.equals("LEFT")) {
                     KeyBindings.set(KeyBindings.SHOOT, Input.Buttons.LEFT, true);
+                } else if (text.equals("SPACE")) {
+                    KeyBindings.set(KeyBindings.SHOOT, Input.Keys.SPACE, false);
                 } else {
                     KeyBindings.set(KeyBindings.SHOOT, Input.Keys.valueOf(text), false);
                 }
-                KeyBindings.set(KeyBindings.UP, Input.Keys.valueOf(up.getText().toUpperCase()), false);
-                KeyBindings.set(KeyBindings.DOWN, Input.Keys.valueOf(down.getText().toUpperCase()), false);
-                KeyBindings.set(KeyBindings.LEFT, Input.Keys.valueOf(left.getText().toUpperCase()), false);
-                KeyBindings.set(KeyBindings.RIGHT, Input.Keys.valueOf(right.getText().toUpperCase()), false);
-                KeyBindings.set(KeyBindings.RELOAD, Input.Keys.valueOf(reload.getText().toUpperCase()), false);
+                KeyBindings.set(KeyBindings.UP, getKeyCode(up.getText()), false);
+                KeyBindings.set(KeyBindings.DOWN, getKeyCode(down.getText()), false);
+                KeyBindings.set(KeyBindings.LEFT, getKeyCode(left.getText()), false);
+                KeyBindings.set(KeyBindings.RIGHT, getKeyCode(right.getText()), false);
+                KeyBindings.set(KeyBindings.RELOAD, getKeyCode(reload.getText()), false);
 
                 KeyBindings.saveBindings();
-                Main.getMain().setScreen(new SettingMenu(GameAssetsManager.getInstance().getSkin()));
+                Main.getMain().setScreen(new SettingMenu(GameAssetsManager.getInstance().getSkin(), false, null));
             } catch (IllegalArgumentException e) {
                 // Show an error or fallback
                 System.out.println("Invalid key entered.");
@@ -136,4 +131,16 @@ public class KeyBoardBindingScreen implements Screen {
     public void dispose() {
 
     }
+
+    public static int getKeyCode(String name) {
+        name = name.trim().toUpperCase(); // Normalize user input
+        for (int i = 0; i < Input.Keys.MAX_KEYCODE; i++) {
+            String keyName = Input.Keys.toString(i);
+            if (keyName != null && name.equals(keyName.toUpperCase())) {
+                return i;
+            }
+        }
+        return -1; // Key not found
+    }
+
 }
