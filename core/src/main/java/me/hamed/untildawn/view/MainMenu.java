@@ -12,6 +12,7 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import me.hamed.untildawn.Main;
 import me.hamed.untildawn.controller.MainMenuController;
 import me.hamed.untildawn.controller.PreGameMenuController;
+import me.hamed.untildawn.model.Game;
 import me.hamed.untildawn.model.GameAssetsManager;
 
 public class MainMenu implements Screen {
@@ -25,26 +26,28 @@ public class MainMenu implements Screen {
     private static TextButton profile;
     private static TextButton talent;
     private static TextButton logout;
+    private static TextButton back;
     private static TextButton save;
     private final Texture luna;
     private final Texture background;
     Image avatar = Main.getMain().getGame().getLoggedInUser().getAvatar();
 
     public MainMenu(Skin skin) {
-        label = new Label("score:", skin);
-        score = new Label("score: ", skin);
+        label = new Label("Score:", skin);
+        score = new Label("Score: ", skin);
         username = new Label("username: ", skin);
         username = new Label(Main.getMain().getGame().getLoggedInUser().getUsername(), skin);
         username.setWidth(100);
         username.setHeight(100);
         score.setText(Main.getMain().getGame().getLoggedInUser().getScore());
-        pregame = new TextButton("pregame", skin);
-        setting = new TextButton("setting", skin);
-        scoreboard = new TextButton("scoreboard", skin);
-        profile = new TextButton("profile", skin);
-        talent = new TextButton("talent", skin);
-        logout = new TextButton("logout", skin);
-        save = new TextButton("save", skin);
+        pregame = new TextButton("Pregame", skin);
+        setting = new TextButton("Setting", skin);
+        scoreboard = new TextButton("Scoreboard", skin);
+        profile = new TextButton("Profile", skin);
+        talent = new TextButton("Talent", skin);
+        logout = new TextButton("Logout", skin);
+        back = new TextButton("Back", skin);
+        save = new TextButton("Save", skin);
         luna = new Texture("Images/Sprite/T_Luna_Portrait.png");
         background = new Texture("ChatGPT Image May 5, 2025, 01_30_18 PM.png");
     }
@@ -92,6 +95,9 @@ public class MainMenu implements Screen {
 
         logout.setPosition(Gdx.graphics.getWidth() * 4 / 7f, Gdx.graphics.getHeight() * 5 / 7f);
         logout.setSize(250 , 100);
+        back.setPosition(Gdx.graphics.getWidth() * 4 / 7f, Gdx.graphics.getHeight() * 5 / 7f + logout.getHeight() * 1.1f);
+        back.setSize(250 , 100);
+        stage.addActor(back);
         stage.addActor(logout);
         stage.addActor(table1);
         stage.addActor(table2);
@@ -134,6 +140,9 @@ public class MainMenu implements Screen {
         if (save.isChecked()) {
             new PreGameMenu(GameAssetsManager.getInstance().getSkin(), false);
             Main.getMain().setScreen(new GameScreen(true, false));
+        }
+        if (back.isChecked()) {
+            Main.getMain().setScreen(new SignUpMenu(GameAssetsManager.getInstance().getSkin()));
         }
 
 

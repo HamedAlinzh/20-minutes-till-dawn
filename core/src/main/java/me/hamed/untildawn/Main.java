@@ -1,7 +1,10 @@
 package me.hamed.untildawn;
 
 import com.badlogic.gdx.Game;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.graphics.Cursor;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import me.hamed.untildawn.model.GameAssetsManager;
 import me.hamed.untildawn.view.LoadingMenu;
@@ -14,8 +17,10 @@ public class Main extends Game {
     private me.hamed.untildawn.model.Game game = new me.hamed.untildawn.model.Game();
     public static Music backgroundMusic;
     private static float soundEffects = 0.5f;
+    private static float soundVolume = 0.5f;
     private boolean autoReload = true;
     private boolean blackAndWhite = false;
+
 
     @Override
     public void create() {
@@ -23,6 +28,9 @@ public class Main extends Game {
         batch = new SpriteBatch();
 //        main.setScreen(new PreGameMenu(GameAssetsManager.getInstance().getSkin()));
         main.setScreen(new LoadingMenu());
+        Pixmap crosshairPixmap = new Pixmap(Gdx.files.internal("Images/Sprite/T_CursorSprite.png"));
+        Cursor crosshairCursor = Gdx.graphics.newCursor(crosshairPixmap, 16, 16); // center hotspot
+        Gdx.graphics.setCursor(crosshairCursor);
     }
 
     @Override
@@ -74,5 +82,12 @@ public class Main extends Game {
 
     public void setBlackAndWhite(boolean blackAndWhite) {
         this.blackAndWhite = blackAndWhite;
+    }
+
+    public static float getSoundVolume() {
+        return soundVolume;
+    }
+    public static void setSoundVolume(float soundVolume) {
+        Main.soundVolume = soundVolume;
     }
 }

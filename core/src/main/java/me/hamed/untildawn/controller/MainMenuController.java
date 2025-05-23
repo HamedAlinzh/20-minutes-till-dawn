@@ -12,7 +12,7 @@ public class MainMenuController {
     }
 
     public static void goToSetting() {
-        Main.getMain().setScreen(new SettingMenu(GameAssetsManager.getInstance().getSkin()));
+        Main.getMain().setScreen(new SettingMenu(GameAssetsManager.getInstance().getSkin(), false, null));
     }
 
     public static void scoreboard() {

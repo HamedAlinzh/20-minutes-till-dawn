@@ -2,10 +2,12 @@ package me.hamed.untildawn.model;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,12 +19,32 @@ public class GameAssetsManager {
     private Map<String, TextureRegion[]> idleFramesMap = new HashMap<>();
     private Map<String, TextureRegion[]> runFramesMap = new HashMap<>();
     private Texture[] heros = new Texture[5];
+    private ArrayList<Sound> xpCollect = new ArrayList<>();
+    private Map<String, Sound> sounds = new HashMap<>();
+    private Texture pauseBg;
 
     private GameAssetsManager() {
         skin = new Skin(Gdx.files.internal("skin/pixthulhu-ui.json"));
         loadIdleFrames();
         loadRunFrames();
         loadHeros();
+        loadXpSounds();
+        loadSounds();
+    }
+
+    public void loadXpSounds() {
+        xpCollect.add(Gdx.audio.newSound(Gdx.files.internal("SFX/AudioClip/Obtain_Points_01.wav")));
+        xpCollect.add(Gdx.audio.newSound(Gdx.files.internal("SFX/AudioClip/Obtain_Points_02.wav")));
+        xpCollect.add(Gdx.audio.newSound(Gdx.files.internal("SFX/AudioClip/Obtain_Points_03.wav")));
+        xpCollect.add(Gdx.audio.newSound(Gdx.files.internal("SFX/AudioClip/Obtain_Points_04.wav")));
+        xpCollect.add(Gdx.audio.newSound(Gdx.files.internal("SFX/AudioClip/Obtain_Points_05.wav")));
+        xpCollect.add(Gdx.audio.newSound(Gdx.files.internal("SFX/AudioClip/Obtain_Points_06.wav")));
+    }
+
+    public void loadSounds() {
+        sounds.put("Shoot", Gdx.audio.newSound(Gdx.files.internal("SFX/AudioClip/single_shot.wav")));
+        sounds.put("Damage", Gdx.audio.newSound(Gdx.files.internal("SFX/AudioClip/sfx_sounds_impact1.wav")));
+        sounds.put("Reload", Gdx.audio.newSound(Gdx.files.internal("SFX/AudioClip/Weapon_Shotgun_Reload.wav")));
     }
 
     public void loadHeros() {
@@ -141,6 +163,13 @@ public class GameAssetsManager {
             new TextureRegion(new Texture("Images/Sprite/Idle_5 #8302.png"))
         });
 
+        idleFramesMap.put("Damage", new TextureRegion[] {
+            new TextureRegion(new Texture("Images/Sprite/ExplosionFX_2.png")),
+            new TextureRegion(new Texture("Images/Sprite/ExplosionFX_3.png")),
+            new TextureRegion(new Texture("Images/Sprite/ExplosionFX_4.png")),
+            new TextureRegion(new Texture("Images/Sprite/ExplosionFX_5.png"))
+        });
+
 
         idleFramesMap.put("Shotgun", new TextureRegion[] {
             new TextureRegion(new Texture("Images/Sprite/T_Shotgun_SS_0.png"))
@@ -246,5 +275,19 @@ public class GameAssetsManager {
 
     public Music gameMusic() {
         return Gdx.audio.newMusic(Gdx.files.internal("SFX/AudioClip/Wasteland Combat Loop.wav"));
+    }
+    public Sound getSounds(String sound) {
+        return sounds.get(sound);
+    }
+    public ArrayList<Sound> getXpSounds() {
+        return xpCollect;
+    }
+
+    public void setPauseBg(Texture pauseBg) {
+        this.pauseBg = pauseBg;
+    }
+
+    public Texture getPauseBg() {
+        return pauseBg;
     }
 }

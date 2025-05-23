@@ -31,4 +31,8 @@ public class GameSave implements Serializable {
     public float eyeBatSpawnInterval;
     public float gameTime;
     public int kills;
+    public float fireRate;
+    public int maxAmo;
+    public float reloadRate;
+    public int projectiles;
 }

@@ -7,11 +7,13 @@ public class User {
     private String password;
     private Image avatar;
     private int score;
+    private int avatarId;
 
-    public User(String username, String password, Image avatar, int score) {
+    public User(String username, String password, Image avatar, int score, int avatarId) {
         this.username = username;
         this.password = password;
         this.avatar = avatar;
+        this.avatarId = avatarId;
         this.score = score;
     }
     public String getUsername() {
@@ -41,5 +43,9 @@ public class User {
 
     public void setScore(int score) {
         this.score = score;
+    }
+
+    public int getAvatarId() {
+        return avatarId;
     }
 }
