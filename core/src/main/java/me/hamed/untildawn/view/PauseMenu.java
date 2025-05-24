@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
@@ -22,12 +23,18 @@ public class PauseMenu implements Screen {
 
     TextButton resumeButton;
     TextButton settingsButton;
+    TextButton giveUp;
     Texture pausedBg;
     SpriteBatch batch = new SpriteBatch();
     TextureRegion pause;
     ShaderProgram blurShader;
     GameScreen gameScreen;
     Table table;
+    boolean gaveUp = false;
+    boolean remove = false;
+    private float stateTime;
+    TextureRegion texture;
+    Animation deathAnimation = new Animation(0.35f, GameAssetsManager.getInstance().getIdleFrames("Death"));
 
     public PauseMenu(Skin skin, GameScreen gameScreen, Texture pausedBg) {
 
@@ -37,6 +44,7 @@ public class PauseMenu implements Screen {
         Gdx.input.setCursorCatched(false);
         this.resumeButton = new TextButton("Resume", skin);
         this.settingsButton = new TextButton("Settings", skin);
+        this.giveUp = new TextButton("Give Up", skin);
     }
 
     @Override
@@ -61,6 +69,8 @@ public class PauseMenu implements Screen {
         table.add(resumeButton);
         table.row().pad(20);
         table.add(settingsButton);
+        table.row().pad(20);
+        table.add(giveUp);
         uiStage.addActor(table);
 
     }
@@ -77,14 +87,38 @@ public class PauseMenu implements Screen {
         if (settingsButton.isChecked()) {
             Main.getMain().setScreen(new SettingMenu(GameAssetsManager.getInstance().getSkin(), true, gameScreen));
         }
+        if (!gaveUp && giveUp.isChecked()) {
+            gaveUp = true;
+        }
+        if (gaveUp) {
+            stateTime += delta;
+        }
+        if (gaveUp) {
+            texture = (TextureRegion) deathAnimation.getKeyFrame(stateTime);
+            update(delta);
+        }
 
         batch.setShader(blurShader);
         batch.begin();
-        batch.draw(pause, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        if (!gaveUp) {
+            batch.draw(pause, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        } else {
+            if (remove) {
+                Main.getMain().setScreen(new GameOverMenu(pause.getTexture(), gameScreen.countdownTime, gameScreen.kills, gameScreen.playAsGuest, gameScreen.heart.getHealth(), gaveUp));
+            }
+            batch.setShader(null);
+            batch.draw(pause, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+            batch.draw(texture, Gdx.graphics.getWidth() / 2f - texture.getRegionWidth() * 3 / 4f + 20, Gdx.graphics.getHeight() / 2f - texture.getRegionHeight() * 3 /4f + 20);
+        }
+
+
+
         batch.end();
 
-        uiStage.act(delta);
-        uiStage.draw();
+        if (!gaveUp) {
+            uiStage.act(delta);
+            uiStage.draw();
+        }
     }
 
     @Override
@@ -110,5 +144,12 @@ public class PauseMenu implements Screen {
     @Override
     public void dispose() {
 
+    }
+
+    public void update(float delta) {
+        stateTime += delta;
+        if (deathAnimation.isAnimationFinished(stateTime)) {
+            remove = true;
+        }
     }
 }

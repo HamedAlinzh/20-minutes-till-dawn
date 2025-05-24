@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 
@@ -14,6 +15,7 @@ import java.util.Map;
 public class GameAssetsManager {
     private static GameAssetsManager instance;
     private Skin skin;
+    private Skin otherSkin;
 
     // Maps hero name -> idle frames array
     private Map<String, TextureRegion[]> idleFramesMap = new HashMap<>();
@@ -22,14 +24,28 @@ public class GameAssetsManager {
     private ArrayList<Sound> xpCollect = new ArrayList<>();
     private Map<String, Sound> sounds = new HashMap<>();
     private Texture pauseBg;
+    private Music menuMusic;
+    private Music gameMusic;
+    private Music otherMusic;
+    private Music tlou;
+
+    private Animation<TextureRegion> shubNiggurath;
+    private Animation<TextureRegion> shubNiggurathDash;
 
     private GameAssetsManager() {
         skin = new Skin(Gdx.files.internal("skin/pixthulhu-ui.json"));
+        otherSkin = new Skin(Gdx.files.internal("neon/neon-ui.json"));
         loadIdleFrames();
         loadRunFrames();
         loadHeros();
         loadXpSounds();
         loadSounds();
+        loadtlou();
+        loadMenuMusic();
+        loadMusic();
+        loadOtherMusic();
+        this.shubNiggurath = new Animation(0.2f, idleFramesMap.get("ShubNiggurath"), Animation.PlayMode.LOOP);
+        this.shubNiggurathDash = new Animation(0.2f, idleFramesMap.get("ShubNiggurath Dash"), Animation.PlayMode.LOOP);
     }
 
     public void loadXpSounds() {
@@ -45,6 +61,8 @@ public class GameAssetsManager {
         sounds.put("Shoot", Gdx.audio.newSound(Gdx.files.internal("SFX/AudioClip/single_shot.wav")));
         sounds.put("Damage", Gdx.audio.newSound(Gdx.files.internal("SFX/AudioClip/sfx_sounds_impact1.wav")));
         sounds.put("Reload", Gdx.audio.newSound(Gdx.files.internal("SFX/AudioClip/Weapon_Shotgun_Reload.wav")));
+        sounds.put("Spawn", Gdx.audio.newSound(Gdx.files.internal("SFX/AudioClip/Monster_2_RecieveAttack_HighIntensity_01.wav")));
+        sounds.put("Dash", Gdx.audio.newSound(Gdx.files.internal("SFX/AudioClip/Buff_BeastsPower.wav")));
     }
 
     public void loadHeros() {
@@ -118,6 +136,14 @@ public class GameAssetsManager {
             new TextureRegion(new Texture("Images/Sprite/SMGReload_1.png")),
             new TextureRegion(new Texture("Images/Sprite/SMGReload_2.png")),
             new TextureRegion(new Texture("Images/Sprite/SMGReload_3.png")),
+        });
+        runFramesMap.put("Azina", new TextureRegion[] {
+            new TextureRegion(new Texture("Images/Texture2D/T_ElectricWall1.png")),
+            new TextureRegion(new Texture("Images/Texture2D/T_ElectricWall2.png")),
+            new TextureRegion(new Texture("Images/Texture2D/T_ElectricWall3.png")),
+            new TextureRegion(new Texture("Images/Texture2D/T_ElectricWall4.png")),
+            new TextureRegion(new Texture("Images/Texture2D/T_ElectricWall5.png")),
+            new TextureRegion(new Texture("Images/Texture2D/T_ElectricWall6.png"))
         });
     }
 
@@ -217,6 +243,34 @@ public class GameAssetsManager {
             new TextureRegion(new Texture("Images/Sprite/DeathFX_2.png")),
             new TextureRegion(new Texture("Images/Sprite/DeathFX_3.png"))
         });
+
+        idleFramesMap.put("ShubNiggurath", new TextureRegion[] {
+            new TextureRegion(new Texture("Images/Sprite/T_ShubNiggurath_0.png")),
+            new TextureRegion(new Texture("Images/Sprite/T_ShubNiggurath_1.png")),
+            new TextureRegion(new Texture("Images/Sprite/T_ShubNiggurath_2.png")),
+            new TextureRegion(new Texture("Images/Sprite/T_ShubNiggurath_3.png"))
+        });
+
+        idleFramesMap.put("ShubNiggurath Dash", new TextureRegion[] {
+            new TextureRegion(new Texture("Images/Sprite/T_ShubNiggurath_4.png")),
+            new TextureRegion(new Texture("Images/Sprite/T_ShubNiggurath_5.png")),
+            new TextureRegion(new Texture("Images/Sprite/T_ShubNiggurath_6.png")),
+            new TextureRegion(new Texture("Images/Sprite/T_ShubNiggurath_7.png")),
+            new TextureRegion(new Texture("Images/Sprite/T_ShubNiggurath_8.png")),
+            new TextureRegion(new Texture("Images/Sprite/T_ShubNiggurath_9.png")),
+            new TextureRegion(new Texture("Images/Sprite/T_ShubNiggurath_10.png"))
+        });
+        idleFramesMap.put("Death", new TextureRegion[] {
+            new TextureRegion(new Texture("Images/Sprite/ExplosionFX_0.png")),
+            new TextureRegion(new Texture("Images/Sprite/ExplosionFX_1.png")),
+            new TextureRegion(new Texture("Images/Sprite/ExplosionFX_2.png")),
+            new TextureRegion(new Texture("Images/Sprite/ExplosionFX_3.png")),
+            new TextureRegion(new Texture("Images/Sprite/ExplosionFX_4.png")),
+            new TextureRegion(new Texture("Images/Sprite/ExplosionFX_5.png")),
+        });
+        idleFramesMap.put("Elder Brain", new TextureRegion[] {
+            new TextureRegion(new Texture("Images/Sprite/ElderBrain.png"))
+        });
     }
 
     public static GameAssetsManager getInstance() {
@@ -228,6 +282,9 @@ public class GameAssetsManager {
 
     public Skin getSkin() {
         return skin;
+    }
+    public Skin getOtherSkin() {
+        return otherSkin;
     }
 
     public TextureRegion[] getIdleFrames(String heroName) {
@@ -273,8 +330,34 @@ public class GameAssetsManager {
         return new Texture("Images/Sprite/T_CursorSprite.png");
     }
 
+
+    private void loadMusic() {
+        this.gameMusic = Gdx.audio.newMusic(Gdx.files.internal("SFX/AudioClip/Wasteland Combat Loop.wav"));
+    }
     public Music gameMusic() {
-        return Gdx.audio.newMusic(Gdx.files.internal("SFX/AudioClip/Wasteland Combat Loop.wav"));
+        return gameMusic;
+    }
+
+    private void loadMenuMusic() {
+        this.menuMusic = Gdx.audio.newMusic(Gdx.files.internal("SFX/AudioClip/Pretty Dungeon LOOP.wav"));
+    }
+    private void loadtlou() {
+        this.tlou = Gdx.audio.newMusic(Gdx.files.internal("tlou.mp3"));
+    }
+    public Music tlouMusic() {
+        return tlou;
+    }
+
+    public Music menuMusic() {
+        return menuMusic;
+    }
+
+    public Music otherMusic() {
+        return otherMusic;
+    }
+
+    private void loadOtherMusic() {
+        this.otherMusic = Gdx.audio.newMusic(Gdx.files.internal("SFX/Crystal Castles - Empathy.mp3"));
     }
     public Sound getSounds(String sound) {
         return sounds.get(sound);
@@ -289,5 +372,15 @@ public class GameAssetsManager {
 
     public Texture getPauseBg() {
         return pauseBg;
+    }
+
+    public Animation<TextureRegion> getShubNiggurath() {
+        return shubNiggurath;
+    }
+
+
+
+    public Animation<TextureRegion> getShubNiggurathDash() {
+        return shubNiggurathDash;
     }
 }

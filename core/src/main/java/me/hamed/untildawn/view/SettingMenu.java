@@ -55,20 +55,26 @@ public class SettingMenu implements Screen {
             public void onSelected(String item) {
                 if (item.equals("Original Theme")) {
                     Main.backgroundMusic.stop();
-                    Main.backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal("SFX/AudioClip/Pretty Dungeon LOOP.wav"));
+                    Main.backgroundMusic = GameAssetsManager.getInstance().menuMusic();
                     Main.backgroundMusic.play();
                     Main.backgroundMusic.setVolume(Main.getSoundVolume());
                     Main.backgroundMusic.setLooping(true);
                 } else if (item.equals("Cristal Castles Empathy")) {
                     Main.backgroundMusic.stop();
-                    Main.backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal("SFX/Crystal Castles - Empathy.mp3"));
+                    Main.backgroundMusic = GameAssetsManager.getInstance().otherMusic();
+                    Main.backgroundMusic.play();
+                    Main.backgroundMusic.setVolume(Main.getSoundVolume());
+                    Main.backgroundMusic.setLooping(true);
+                } else if (item.equals("The Last Of Us Theme")) {
+                    Main.backgroundMusic.stop();
+                    Main.backgroundMusic = GameAssetsManager.getInstance().tlouMusic();
                     Main.backgroundMusic.play();
                     Main.backgroundMusic.setVolume(Main.getSoundVolume());
                     Main.backgroundMusic.setLooping(true);
                 }
             }
         });
-        musics.setItems(new Array<>(new String[]{"Original Theme", "Cristal Castles Empathy"}));
+        musics.setItems(new Array<>(new String[]{"Original Theme", "Cristal Castles Empathy", "The Last Of Us Theme"}));
         musics.setSize(550, 110);
         table.add(musics).size(550, 110);
         table.row().pad(20);

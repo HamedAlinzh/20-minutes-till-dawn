@@ -69,7 +69,7 @@ public class SignUpMenu implements Screen {
     @Override
     public void show() {
         if (Main.backgroundMusic == null) {
-            Main.backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal("SFX/AudioClip/Pretty Dungeon LOOP.wav"));
+            Main.backgroundMusic = GameAssetsManager.getInstance().menuMusic();
             Main.backgroundMusic.setLooping(true);
             Main.backgroundMusic.setVolume(Main.getSoundVolume());
             Main.backgroundMusic.play();

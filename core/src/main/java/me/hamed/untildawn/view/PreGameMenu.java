@@ -216,7 +216,10 @@ public class PreGameMenu implements Screen {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 try {
-                    PreGameMenuController.play(selectedHero, selectedWeapon.getFrames()[0], time.getSelected(), errorLabel, selectedWeapon.getName(), playAsGuest);
+                    if (selectedWeapon == null) {
+                        errorLabel.setText("Choose A Weapon!");
+                    } else
+                        PreGameMenuController.play(selectedHero, selectedWeapon.getFrames()[0], time.getSelected(), errorLabel, selectedWeapon.getName(), playAsGuest);
                 } catch (IOException e) {
                     e.printStackTrace(); // or show an error message on screen
                 }
