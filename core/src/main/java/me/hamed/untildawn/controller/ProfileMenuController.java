@@ -143,4 +143,28 @@ public class ProfileMenuController {
         }
     }
 
+    public static void saveScore(int score, int kills, String timeAlive) throws IOException {
+        User user = Main.getMain().getGame().getLoggedInUser();
+
+        String content = new String(Files.readAllBytes(Paths.get(USER_FILE)));
+        JSONArray users = new JSONArray(content);
+        JSONObject currentUserObj = null;
+        for (int i = 0; i < users.length(); i++) {
+            JSONObject userObj = users.getJSONObject(i);
+            if (userObj.getString("username").equals(user.getUsername())) {
+                currentUserObj = userObj;
+                break;
+            }
+        }
+
+        if (currentUserObj != null) {
+            String scoreString = String.valueOf(score);
+            currentUserObj.put("score", scoreString);
+            currentUserObj.put("kills", kills);
+            currentUserObj.put("timeAlive", timeAlive);
+        }
+        Files.write(Paths.get(USER_FILE), users.toString(4).getBytes());
+
+    }
+
 }

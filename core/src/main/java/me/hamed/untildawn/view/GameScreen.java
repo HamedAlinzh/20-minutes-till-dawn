@@ -228,9 +228,9 @@ public class GameScreen implements Screen {
         spawnInterval = 90 / (gameTime - countdownTime) + 0.08f;
 
         if (enemySpawnTimer >= spawnInterval) {
-            BrainMonster.spawn(brainMonsters, monsters, false);
+            BrainMonster.spawn(brainMonsters, monsters, false, -1);
             if (countdownTime <= (gameTime / 2f) && !bossSpawned) {
-                BrainMonster.spawn(brainMonsters, monsters, true);
+                BrainMonster.spawn(brainMonsters, monsters, true, 1);
                 bossSpawned = true;
                 for (BrainMonster monster : brainMonsters) {
                     if (monster.isBoss()) {
@@ -242,17 +242,15 @@ public class GameScreen implements Screen {
                 }
             }
             if (countdownTime <= (gameTime * 3 / 4f) && !elderBossSpawned) {
-                BrainMonster.spawn(brainMonsters, monsters, true);
+                BrainMonster.spawn(brainMonsters, monsters, true, 0);
                 elderBossSpawned = true;
             }
             enemySpawnTimer = 0f;
         }
 
-        if (!bossSpawned && Gdx.input.isKeyJustPressed(Input.Keys.B)) {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.B)) {
             BrainMonster.bosses = 1;
-            BrainMonster.spawn(brainMonsters, monsters, true);
-            BrainMonster.bosses = 0;
-            bossSpawned = true;
+            BrainMonster.spawn(brainMonsters, monsters, true, 1);
             for (BrainMonster monster : brainMonsters) {
                 if (monster.isBoss()) {
                     shubNiggurath = monster;

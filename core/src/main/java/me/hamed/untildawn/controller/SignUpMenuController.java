@@ -67,6 +67,9 @@ public class SignUpMenuController {
             newUser.put("username", username);
             newUser.put("password", password);
             newUser.put("avatar", selectedAvatar);
+            newUser.put("score", 0);
+            newUser.put("kills", 0);
+            newUser.put("timeAlive", "00:00");
             users.put(newUser);
 
             Files.write(
