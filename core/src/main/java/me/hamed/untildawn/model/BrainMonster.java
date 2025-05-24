@@ -22,7 +22,7 @@ public class BrainMonster extends Monster {
         this.isBoss = isBoss;
     }
 
-    public static void spawn(ArrayList<BrainMonster> brainMonsters, ArrayList<Monster> monsters, boolean isElder) {
+    public static void spawn(ArrayList<BrainMonster> brainMonsters, ArrayList<Monster> monsters, boolean isElder, int boss) {
         float x = 0, y = 0;
         int edge = MathUtils.random(3);
 
@@ -46,7 +46,7 @@ public class BrainMonster extends Monster {
         }
 
         if (isElder) {
-            if (bosses == 1) {
+            if (boss == 1) {
                 BrainMonster monster = new BrainMonster(x, y, true);
                 monster.setHb(1000);
                 Animation<TextureRegion> animation1 = new Animation(0.2f, GameAssetsManager.getInstance().getIdleFrames("ShubNiggurath"));
@@ -56,6 +56,7 @@ public class BrainMonster extends Monster {
                 monster.setHeight(125);
                 monsters.add(monster);
                 brainMonsters.add(monster);
+                bosses = 0;
             } else {
                 BrainMonster monster = new BrainMonster(x, y, false);
                 monster.setHb(700);
@@ -66,7 +67,7 @@ public class BrainMonster extends Monster {
                 monster.setHeight(160);
                 monsters.add(monster);
                 brainMonsters.add(monster);
-                bosses++;
+                bosses = 1;
             }
         } else {
             BrainMonster monster = new BrainMonster(x, y, false);

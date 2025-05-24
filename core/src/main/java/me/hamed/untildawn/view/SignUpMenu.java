@@ -28,6 +28,7 @@ public class SignUpMenu implements Screen {
     private TextField field;
     private TextField passField;
     private TextField questionField;
+    private Label credit;
 
     private  Label label;
     private  TextButton button;
@@ -50,6 +51,8 @@ public class SignUpMenu implements Screen {
     public static Image avatar3 = new Image(avatar3Texture);
     public static Image avatar4 = new Image(avatar4Texture);
 
+    private Table creditTable;
+
     public SignUpMenu(Skin skin) {
         table = new Table();
         field = new TextField("username", skin);
@@ -64,6 +67,8 @@ public class SignUpMenu implements Screen {
         background = new Texture("ChatGPT Image May 5, 2025, 01_30_18 PM.png");
         scarlett = new Texture("Images/Sprite/T_Scarlett_Portrait.png");
         errorLabel = new Label("", skin);
+        credit = new Label("By Hamed Alinzh ©", skin);
+        creditTable = new Table();
     }
 
     @Override
@@ -139,6 +144,11 @@ public class SignUpMenu implements Screen {
             }
         });
 
+        creditTable.setPosition(150, Gdx.graphics.getHeight() * 12 / 13f);
+        credit.setColor(Color.BLUE);
+        creditTable.add(credit).width(200);
+
+        stage.addActor(creditTable);
         stage.addActor(topRightTable); // 🔹 Add top-right buttons first// Optional: where this appears depends on alignment
         stage.addActor(avatarTable);
         stage.addActor(table);

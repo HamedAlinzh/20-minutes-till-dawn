@@ -17,11 +17,13 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import me.hamed.untildawn.Main;
+import me.hamed.untildawn.controller.ProfileMenuController;
 import me.hamed.untildawn.model.GameAssetsManager;
 import me.hamed.untildawn.model.Player;
 import me.hamed.untildawn.model.User;
 
 import java.awt.*;
+import java.io.IOException;
 
 public class GameOverMenu implements Screen {
     Texture pausedBg;
@@ -160,10 +162,16 @@ public class GameOverMenu implements Screen {
             Main.backgroundMusic = GameAssetsManager.getInstance().menuMusic();
             Main.backgroundMusic.play();
         } else if (back.isChecked() && !playAsGuest) {
+            try {
+                ProfileMenuController.saveScore((int)(Main.getMain().getGame().getTime() - countdownTime) * kills, kills, GameScreen.formatTime(Main.getMain().getGame().getTime() - countdownTime));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
             Main.getMain().setScreen(new MainMenu(GameAssetsManager.getInstance().getSkin()));
             Main.backgroundMusic.stop();
             Main.backgroundMusic = GameAssetsManager.getInstance().menuMusic();
             Main.backgroundMusic.play();
+
         }
 
         uiStage.act(delta);

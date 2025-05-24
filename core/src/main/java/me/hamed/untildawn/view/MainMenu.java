@@ -60,21 +60,18 @@ public class MainMenu implements Screen {
         Gdx.input.setInputProcessor(stage);
         table1.setFillParent(true);
         table2.setFillParent(true);
-        userinfo.setSize(400, 300); // or based on screen size
+        userinfo.setSize(400, 300);
         userinfo.setPosition(Gdx.graphics.getWidth() * 5 / 6f, Gdx.graphics.getHeight() / 3.5f);
         userinfo.right().padBottom(Gdx.graphics.getWidth() / 3.5f).padRight(Gdx.graphics.getWidth() / 10f);
-        // First row: avatar and username
         userinfo.add(avatar).size(100, 100).pad(30);
         username.setColor(Color.RED);
         userinfo.add(username).pad(10);
-        userinfo.row(); // go to next row
-
-// Second row: label and score
+        userinfo.row();
         label.setColor(Color.RED);
         userinfo.add(label).pad(10);
         userinfo.add(score).pad(10);
-        userinfo.setTransform(true);         // Enable transform support
-        userinfo.setOrigin(Align.center);   // Set origin to scale from center
+        userinfo.setTransform(true);
+        userinfo.setOrigin(Align.center);
         userinfo.setScale(1.5f);
 
 
