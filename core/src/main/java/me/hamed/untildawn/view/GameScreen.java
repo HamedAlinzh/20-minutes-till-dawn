@@ -13,6 +13,7 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.ScreenUtils;
@@ -22,12 +23,17 @@ import me.hamed.untildawn.model.GameSaves.*;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 public class GameScreen implements Screen {
     public float SHOOT_WAIT_TIME = 0.25f;
     private final float RELOAD_BAR_X = 996.5f;
     private final float RELOAD_BAR_Y = 582f;
+    private final float DASH_BREAK_TIME = 5f;
+
+    private float dashBreakTimer = 0f;
+    private boolean dashBreak = false;
 
     float worldX = 0f;
     float worldY = 0f;
@@ -36,7 +42,7 @@ public class GameScreen implements Screen {
 
 
     private Game game = Main.getMain().getGame();
-    private float countdownTime; // in seconds
+    float countdownTime; // in seconds
     private boolean timeUp = false;
     private BitmapFont timerFont;
     private float gameTime;
@@ -52,7 +58,7 @@ public class GameScreen implements Screen {
     private int level = 1;
     private int currentXp = 0;
     private int xpToNextLevel = 20;
-    private int kills = 0;
+    int kills = 0;
     boolean showLevelUpUI = false;
 
     private ShapeRenderer shapeRenderer = new ShapeRenderer();
@@ -91,11 +97,18 @@ public class GameScreen implements Screen {
     private float eyeBatSpawnTimer = 0f;
     private float eyeBatSpawnInterval = 0f;
     private ArrayList<BrainMonster> brainMonsters = new ArrayList<>();
+    boolean bossSpawned = false;
+    boolean elderBossSpawned = false;
     private ArrayList<EyeBat> eyeBats = new ArrayList<>();
     private ArrayList<Monster> monsters = new ArrayList<>();
     private ArrayList<XpDrop> xpDrops = new ArrayList<>();
     private ArrayList<Tree> trees = new ArrayList<>();
     private ArrayList<MonsterDeath> monsterDeaths = new ArrayList<>();
+    private BrainMonster shubNiggurath;
+    private boolean isDashing;
+    private float dashTimer = 0f;
+    private boolean collision = false;
+
 
 
 
@@ -111,9 +124,11 @@ public class GameScreen implements Screen {
     float reloadBarX = RELOAD_BAR_X;
     float reloadBarY = RELOAD_BAR_Y;
     boolean autoAim = false;
+    AnimatedBorder animatedBorder = new AnimatedBorder();
+    ArrayList<Rectangle> hitBoxes = animatedBorder.getHitboxes();
 
 
-    private boolean playAsGuest;
+    boolean playAsGuest;
     private InputProcessor gameInputProcessor;
 
 
@@ -210,16 +225,158 @@ public class GameScreen implements Screen {
 
         // Spawn brain monsters
         enemySpawnTimer += delta;
-        spawnInterval = 90 / (gameTime - countdownTime);
+        spawnInterval = 90 / (gameTime - countdownTime) + 0.08f;
 
         if (enemySpawnTimer >= spawnInterval) {
-            BrainMonster.spawn(brainMonsters, monsters);
+            BrainMonster.spawn(brainMonsters, monsters, false);
+            if (countdownTime <= (gameTime / 2f) && !bossSpawned) {
+                BrainMonster.spawn(brainMonsters, monsters, true);
+                bossSpawned = true;
+                for (BrainMonster monster : brainMonsters) {
+                    if (monster.isBoss()) {
+                        shubNiggurath = monster;
+                        shubNiggurath.setSpeed(200);
+                        GameAssetsManager.getInstance().getSounds("Spawn").play();
+                        break;
+                    }
+                }
+            }
+            if (countdownTime <= (gameTime * 3 / 4f) && !elderBossSpawned) {
+                BrainMonster.spawn(brainMonsters, monsters, true);
+                elderBossSpawned = true;
+            }
             enemySpawnTimer = 0f;
         }
 
+        if (!bossSpawned && Gdx.input.isKeyJustPressed(Input.Keys.B)) {
+            BrainMonster.bosses = 1;
+            BrainMonster.spawn(brainMonsters, monsters, true);
+            BrainMonster.bosses = 0;
+            bossSpawned = true;
+            for (BrainMonster monster : brainMonsters) {
+                if (monster.isBoss()) {
+                    shubNiggurath = monster;
+                    shubNiggurath.setSpeed(200);
+                    GameAssetsManager.getInstance().getSounds("Spawn").play();
+                    break;
+                }
+            }
+        }
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.P)) {
+            weapon.setProjectile(weapon.getProjectile() + 1);
+        }
+
+
+        if (shubNiggurath != null) {
+
+            if (dashBreak)
+                dashBreakTimer += delta;
+            if (dashBreakTimer >= DASH_BREAK_TIME) {
+                dashBreakTimer = 0;
+                dashBreak = false;
+            }
+
+            if (!dashBreak && dashTimer == 0 && Math.abs(shubNiggurath.getX() - playerDrawX) < 300 && Math.abs(shubNiggurath.getY() - playerDrawY) < 300) {
+                isDashing = true;
+                GameAssetsManager.getInstance().getSounds("Dash").play();
+                shubNiggurath.setAnimation(GameAssetsManager.getInstance().getIdleFrames("ShubNiggurath Dash"));
+                shubNiggurath.setSpeed(500);
+                dashTimer = 0;
+            }
+            if (isDashing)
+                dashTimer += delta;
+
+            if (dashTimer >= 1) {
+                isDashing = false;
+                dashTimer = 0;
+                shubNiggurath.setAnimation(GameAssetsManager.getInstance().getIdleFrames("ShubNiggurath"));
+                shubNiggurath.setSpeed(170);
+                dashBreak = true;
+            }
+
+            if (shubNiggurath.getHb() <= 0) {
+                shubNiggurath = null;
+            }
+        }
+
+        if (shubNiggurath != null) {
+            for (Rectangle rect : hitBoxes) {
+                if (playerRect.overlaps(rect) && !invincible) {
+                    heart.setHealth(heart.getHealth() - 1);
+                    GameAssetsManager.getInstance().getSounds("Damage").play(Main.getSoundEffects());
+                    playingDamageAnimation = true;
+                    invincible = true;
+                    break;
+
+                }
+            }
+        }
+
+
+        float deltaX = 0, deltaY = 0;
+
+        if (Gdx.input.isKeyPressed(KeyBindings.get(KeyBindings.UP))) deltaY = speed * delta;
+        if (Gdx.input.isKeyPressed(KeyBindings.get(KeyBindings.DOWN))) deltaY = -speed * delta;
+        if (Gdx.input.isKeyPressed(KeyBindings.get(KeyBindings.LEFT))) deltaX = -speed * delta;
+        if (Gdx.input.isKeyPressed(KeyBindings.get(KeyBindings.RIGHT))) deltaX = speed * delta;
+
+        boolean collision = false;
+        for (Rectangle rect : hitBoxes) {
+            Rectangle moved = new Rectangle(rect);
+            moved.x -= deltaX;
+            moved.y -= deltaY;
+            if (playerRect.overlaps(moved)) {
+                collision = true;
+                break;
+            }
+        }
+
+        if (shubNiggurath != null && !collision) {
+            // Only move world if no collision would occur
+            animatedBorder.moveRelativeToPlayer(playerDx,playerDy,delta);
+            for (Monster monster : monsters) {
+                monster.moveRelativeToPlayer(playerDx, playerDy);
+                if (monster instanceof EyeBat) {
+                    for (EyeBatBullet bullet : ((EyeBat) monster).getBullets()) {
+                        bullet.moveRelativeToPlayer(playerDx, playerDy);
+                    }
+                }
+            }
+            for (XpDrop xpDrop : xpDrops) {
+                xpDrop.moveRelativeToPlayer(playerDx, playerDy);
+            }
+            for (Tree tree : trees) {
+                tree.moveRelativeToPlayer(playerDx, playerDy, delta);
+            }
+            for (Rectangle rect : hitBoxes) {
+                rect.x -= deltaX;
+                rect.y -= deltaY;
+            }
+            worldX += deltaX;
+            worldY += deltaY;
+        } else if (shubNiggurath == null) {
+            for (Monster monster : monsters) {
+                monster.moveRelativeToPlayer(playerDx, playerDy);
+                if (monster instanceof EyeBat) {
+                    for (EyeBatBullet bullet : ((EyeBat) monster).getBullets()) {
+                        bullet.moveRelativeToPlayer(playerDx, playerDy);
+                    }
+                }
+            }
+            for (XpDrop xpDrop : xpDrops) {
+                xpDrop.moveRelativeToPlayer(playerDx, playerDy);
+            }
+            for (Tree tree : trees) {
+                tree.moveRelativeToPlayer(playerDx, playerDy, delta);
+            }
+            worldX += deltaX;
+            worldY += deltaY;
+        }
+
         eyeBatSpawnTimer += delta;
-        eyeBatSpawnInterval = 300 / (4 * (gameTime - countdownTime) - gameTime + 30);
-        if (gameTime - countdownTime > gameTime / 4f) { // TODO tagheer be 4f
+        eyeBatSpawnInterval = 300 / (4 * (gameTime - countdownTime) - gameTime + 30) + 0.1f;
+        if (gameTime - countdownTime > gameTime / 4f) {
             if (eyeBatSpawnTimer >= eyeBatSpawnInterval) {
                 EyeBat.spawn(eyeBats, monsters);
                 eyeBatSpawnTimer = 0f;
@@ -227,7 +384,6 @@ public class GameScreen implements Screen {
         }
         Monster nearestEnemy = findNearestBrainMonster();
 
-        // Calculate angle to nearest enemy once
         float angleRadians = 0f;
 
         if (autoAim) {
@@ -238,17 +394,11 @@ public class GameScreen implements Screen {
             }
         } else {
             Vector3 mouse = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
-//            camera.unproject(mouse); // convert to world coordinates
 
             float dx = playerDrawX - mouse.x;
             float dy = playerDrawY - mouse.y;
-            angleRadians = (float) Math.atan2(dy, dx);
-            angleRadians += MathUtils.PI;
-//            System.out.println("Mouse world: " + mouse.x + ", " + mouse.y + "   " + playerDrawX + ", " + playerDrawY);
-//            System.out.println("Player: " + playerDrawX + ", " + playerDrawY);
-//            System.out.println("Angle (deg): " + Math.toDegrees(angleRadians));
-
-
+            angleRadians = (float) Math.atan2(dx, dy);
+            angleRadians += MathUtils.PI / 2f;
         }
 
 
@@ -258,11 +408,9 @@ public class GameScreen implements Screen {
         ArrayList<Monster> monstersToRemove = new ArrayList<>();
         for (Monster monster : monsters) {
             monster.update(delta, playerDrawX, playerDrawY);
-            monster.moveRelativeToPlayer(playerDx, playerDy);
 
             if (monster instanceof EyeBat) {
                 for (EyeBatBullet bullet : ((EyeBat) monster).getBullets()) {
-                    bullet.moveRelativeToPlayer(playerDx, playerDy);
                     bullet.update(delta);
                 }
             }
@@ -339,7 +487,7 @@ public class GameScreen implements Screen {
 
 
         Vector3 mouseScreen = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
-        camera.unproject(mouseScreen); // get actual position in world space
+        camera.unproject(mouseScreen);
 
         Vector2 target = new Vector2(mouseScreen.x, mouseScreen.y);
         Vector2 origin = new Vector2(playerDrawX, playerDrawY);
@@ -356,11 +504,8 @@ public class GameScreen implements Screen {
                         shootTimer = 0;
                         float spreadAngle = 7.5f;
                         float baseAngle;
-                        if (autoAim) {
-                            baseAngle = bulletDirection.angleDeg();
-                        } else {
-                            baseAngle = directionAim.angleDeg();
-                        }
+
+                        baseAngle = bulletDirection.angleDeg();
 
                         for (int i = 0; i < weapon.getProjectile(); i++) {
                             float offset = (i - (weapon.getProjectile() - 1) / 2f) * spreadAngle;
@@ -379,11 +524,55 @@ public class GameScreen implements Screen {
                         shootTimer = 0;
                         float spreadAngle = 7.5f;
                         float baseAngle;
-                        if (autoAim) {
-                            baseAngle = bulletDirection.angleDeg();
-                        } else {
-                            baseAngle = directionAim.angleDeg();
+                        baseAngle = bulletDirection.angleDeg();
+
+
+                        for (int i = 0; i < weapon.getProjectile(); i++) {
+                            float offset = (i - (weapon.getProjectile() - 1) / 2f) * spreadAngle;
+                            float finalAngle = baseAngle + offset;
+                            Vector2 newDirection = new Vector2(1, 0).setAngleDeg(finalAngle).nor();
+                            Bullet bullet = new Bullet(bulletX, bulletY, newDirection);
+                            bullets.add(bullet);
                         }
+                        GameAssetsManager.getInstance().getSounds("Shoot").play(Main.getSoundEffects());
+                        firedBullets++;
+                    }
+                }
+            }
+        } else {
+            if (!KeyBindings.isMouse(KeyBindings.SHOOT)) {
+                if (Gdx.input.isKeyPressed(KeyBindings.get(KeyBindings.SHOOT)) &&
+                    shootTimer >= SHOOT_WAIT_TIME &&
+                    firedBullets < weapon.getMaxAmmo()) {
+
+                    if (!reloading) {
+                        shootTimer = 0;
+                        float spreadAngle = 7.5f;
+                        float baseAngle;
+
+                        baseAngle = bulletDirection.angleDeg();
+
+
+                        for (int i = 0; i < weapon.getProjectile(); i++) {
+                            float offset = (i - (weapon.getProjectile() - 1) / 2f) * spreadAngle;
+                            float finalAngle = baseAngle + offset;
+                            Vector2 newDirection = new Vector2(1, 0).setAngleDeg(finalAngle).nor();
+                            Bullet bullet = new Bullet(bulletX, bulletY, newDirection);
+                            bullets.add(bullet);
+                        }
+                        GameAssetsManager.getInstance().getSounds("Shoot").play(Main.getSoundEffects());
+                        firedBullets++;
+                    }
+                }
+            } else {
+                if (Gdx.input.isButtonPressed(Input.Buttons.LEFT) && shootTimer >= SHOOT_WAIT_TIME && firedBullets < weapon.getMaxAmmo()) {
+                    if (!reloading) {
+                        shootTimer = 0;
+                        float spreadAngle = 7.5f;
+                        float baseAngle;
+
+                        baseAngle = directionAim.angleDeg();
+
 
                         for (int i = 0; i < weapon.getProjectile(); i++) {
                             float offset = (i - (weapon.getProjectile() - 1) / 2f) * spreadAngle;
@@ -399,7 +588,6 @@ public class GameScreen implements Screen {
             }
         }
 
-        // check for collisions
         for (Bullet bullet : bullets) {
             for (Monster monster : monsters) {
                 if (monster.getBounds().overlaps(bullet.getBounds())) {
@@ -440,9 +628,8 @@ public class GameScreen implements Screen {
 
         ArrayList<XpDrop> xpDropsToRemove = new ArrayList<>();
         for (XpDrop xpDrop : xpDrops) {
-            xpDrop.moveRelativeToPlayer(playerDx, playerDy);
             if (playerRect.overlaps(xpDrop.getBounds())) {
-                currentXp += 12; // TODO: 3 ta
+                currentXp += 6;
                 Random random = new Random();
                 int x = random.nextInt(6);
                 GameAssetsManager.getInstance().getXpSounds().get(x).play(Main.getSoundEffects());
@@ -459,10 +646,6 @@ public class GameScreen implements Screen {
             }
         }
         xpDrops.removeAll(xpDropsToRemove);
-
-        for (Tree tree : trees) {
-            tree.moveRelativeToPlayer(playerDx, playerDy, delta);
-        }
 
         float fillRatio = (float) currentXp / (level * 20);
         int filledWidth = (int)(barWidth * fillRatio);
@@ -576,7 +759,7 @@ public class GameScreen implements Screen {
         for (Monster monster : monsters) {
             monster.draw(batch);
         }
-        if (nearestEnemy != null) {
+        if (nearestEnemy != null && autoAim) {
             batch.draw(GameAssetsManager.getInstance().cursor(), nearestEnemy.getX() + nearestEnemy.getWidth() / 2f - GameAssetsManager.getInstance().cursor().getWidth() / 2,
                 nearestEnemy.getY() + nearestEnemy.getHeight() / 2f - GameAssetsManager.getInstance().cursor().getHeight() / 2, 30, 30);
         }
@@ -585,6 +768,10 @@ public class GameScreen implements Screen {
         }
         for (Bullet bullet : bullets) {
             bullet.draw(batch);
+        }
+
+        if (shubNiggurath != null) {
+            animatedBorder.draw(batch, delta);
         }
 
         // Draw player centered
@@ -724,41 +911,50 @@ public class GameScreen implements Screen {
             Pixmap screenshotPixmap = ScreenUtils.getFrameBufferPixmap(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
             Texture pausedBg = new Texture(screenshotPixmap);
             screenshotPixmap.dispose();
-            Main.getMain().setScreen(new GameOverMenu(pausedBg, countdownTime, kills, playAsGuest, heart.getHealth()));
+            Main.getMain().setScreen(new GameOverMenu(pausedBg, countdownTime, kills, playAsGuest, heart.getHealth(), false));
         }
     }
 
     private void handleInput(float delta) {
         isRunning = false;
         if (Gdx.input.isKeyPressed(KeyBindings.get(KeyBindings.UP))) {
-            player.position.y += speed * delta;
-            worldY += speed * delta;
             isRunning = true;
+            if (!collision) {
+                player.position.y += speed * delta;
+//                worldY += speed * delta;
+            }
+
         }
         if (Gdx.input.isKeyPressed(KeyBindings.get(KeyBindings.DOWN))) {
-            player.position.y -= speed * delta;
-            worldY -= speed * delta;
             isRunning = true;
+            if (!collision) {
+                player.position.y -= speed * delta;
+//                worldY -= speed * delta;
+            }
         }
         if (Gdx.input.isKeyPressed(KeyBindings.get(KeyBindings.LEFT))) {
-            player.position.x -= speed * delta;
-            worldX -= speed * delta;
             if (!facingLeft) {
                 flipAnimation(runAnimation, true);
                 flipAnimation(idleAnimation, true);
                 facingLeft = true;
             }
             isRunning = true;
+            if (!collision) {
+                player.position.x -= speed * delta;
+//                worldX -= speed * delta;
+            }
         }
         if (Gdx.input.isKeyPressed(KeyBindings.get(KeyBindings.RIGHT))) {
-            player.position.x += speed * delta;
-            worldX += speed * delta;
             if (facingLeft) {
                 flipAnimation(runAnimation, false);
                 flipAnimation(idleAnimation, false);
                 facingLeft = false;
             }
             isRunning = true;
+            if (!collision) {
+                player.position.x += speed * delta;
+//                worldX += speed * delta;
+            }
         }
     }
 
@@ -997,7 +1193,7 @@ public class GameScreen implements Screen {
             }
             for (MonsterSave monsterSave : data.monsters) {
                 if (monsterSave.type.equals("BrainMonster")) {
-                    BrainMonster bm = new BrainMonster(monsterSave.x, monsterSave.y);
+                    BrainMonster bm = new BrainMonster(monsterSave.x, monsterSave.y, false);
                     monsters.add(bm);
                 } else if (monsterSave.type.equals("EyeBat")) {
                     EyeBat monster = new EyeBat(monsterSave.x, monsterSave.y);

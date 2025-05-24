@@ -39,7 +39,7 @@ public class LoginMenu implements Screen {
     public LoginMenu(Skin skin) {
         table = new Table();
         field = new TextField("username", skin);
-        label = new Label("Login Up Menu", skin);
+        label = new Label("Login Menu", skin);
         button = new TextButton("Enter Pregame Menu", skin);
         forgetPassButton = new TextButton("Forget Password", skin);
         field = new TextField("username", skin);

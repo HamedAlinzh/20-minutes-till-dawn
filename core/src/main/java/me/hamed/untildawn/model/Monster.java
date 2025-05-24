@@ -16,6 +16,7 @@ public abstract class Monster {
     protected float stateTime;
     protected boolean isFlipped = false;
     protected CollisionRect rect;
+    protected TextureRegion[] textureRegion;
     protected boolean remove = false;
 
     public Monster(float x, float y, float speed, int health, TextureRegion[] frames) {
@@ -24,9 +25,9 @@ public abstract class Monster {
         this.speed = speed;
         this.health = health;
 
-        this.animation = new Animation<>(0.2f, cloneFrames(frames));
+        this.textureRegion = frames;
+        this.animation = new Animation<>(0.2f, cloneFrames(textureRegion));
         this.animation.setPlayMode(Animation.PlayMode.LOOP);
-
         this.width = frames[0].getRegionWidth() * 1.5f;
         this.height = frames[0].getRegionHeight() * 1.5f;
 
@@ -117,4 +118,22 @@ public abstract class Monster {
     public float getHeight() {
         return height;
     }
+
+    public void setHeight(float height) {
+        this.height = height;
+    }
+
+    public void setWidth(float width) {
+        this.width = width;
+    }
+
+    public void setAnimation(TextureRegion[] frames) {
+        this.animation = new Animation<>(0.2f, frames);
+        this.animation.setPlayMode(Animation.PlayMode.LOOP);
+    }
+
+    public void setSpeed(float speed) {
+        this.speed = speed;
+    }
+
 }
