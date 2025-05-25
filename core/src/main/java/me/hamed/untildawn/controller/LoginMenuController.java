@@ -10,6 +10,7 @@ import me.hamed.untildawn.model.User;
 import me.hamed.untildawn.view.MainMenu;
 import me.hamed.untildawn.view.PreGameMenu;
 import me.hamed.untildawn.view.SignUpMenu;
+import me.hamed.untildawn.view.Texts;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -52,7 +53,7 @@ public class LoginMenuController {
             }
         }
 
-        errorLabel.setText("Invalid username!");
+        errorLabel.setText((Main.getMain().getLanguage().equals("english")) ? Texts.INVALID_USERNAME.getEnglish() : Texts.INVALID_USERNAME.getFrench());
         errorLabel.setVisible(true);
     }
 

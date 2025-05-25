@@ -33,21 +33,21 @@ public class MainMenu implements Screen {
     Image avatar = Main.getMain().getGame().getLoggedInUser().getAvatar();
 
     public MainMenu(Skin skin) {
-        label = new Label("Score:", skin);
-        score = new Label("Score: ", skin);
-        username = new Label("username: ", skin);
+        label = new Label((Main.getMain().getLanguage().equals("english")) ? Texts.SCORE_LABEL.getEnglish() : Texts.SCORE_LABEL.getFrench(), skin);
+        score = new Label((Main.getMain().getLanguage().equals("english")) ? Texts.SCORE_LABEL.getEnglish() : Texts.SCORE_LABEL.getFrench(), skin);
+        username = new Label((Main.getMain().getLanguage().equals("english")) ? Texts.USERNAME.getEnglish() : Texts.USERNAME.getFrench(), skin);
         username = new Label(Main.getMain().getGame().getLoggedInUser().getUsername(), skin);
         username.setWidth(100);
         username.setHeight(100);
         score.setText(Main.getMain().getGame().getLoggedInUser().getScore());
-        pregame = new TextButton("Pregame", skin);
-        setting = new TextButton("Setting", skin);
-        scoreboard = new TextButton("Scoreboard", skin);
-        profile = new TextButton("Profile", skin);
-        talent = new TextButton("Talent", skin);
-        logout = new TextButton("Logout", skin);
-        back = new TextButton("Back", skin);
-        save = new TextButton("Save", skin);
+        pregame = new TextButton((Main.getMain().getLanguage().equals("english")) ? Texts.PREGAME.getEnglish() : Texts.PREGAME.getFrench(), skin);
+        setting = new TextButton((Main.getMain().getLanguage().equals("english")) ? Texts.SETTING.getEnglish() : Texts.SETTING.getFrench(), skin);
+        scoreboard = new TextButton((Main.getMain().getLanguage().equals("english")) ? Texts.SCOREBOARD.getEnglish() : Texts.SCOREBOARD.getFrench(), skin);
+        profile = new TextButton((Main.getMain().getLanguage().equals("english")) ? Texts.PROFILE.getEnglish() : Texts.PROFILE.getFrench(), skin);
+        talent = new TextButton((Main.getMain().getLanguage().equals("english")) ? Texts.TALENT.getEnglish() : Texts.TALENT.getFrench(), skin);
+        logout = new TextButton((Main.getMain().getLanguage().equals("english")) ? Texts.LOGOUT.getEnglish() : Texts.LOGOUT.getFrench(), skin);
+        back = new TextButton((Main.getMain().getLanguage().equals("english")) ? Texts.BACK.getEnglish() : Texts.BACK.getFrench(), skin);
+        save = new TextButton((Main.getMain().getLanguage().equals("english")) ? Texts.SAVE.getEnglish() : Texts.SAVE.getFrench(), skin);
         luna = new Texture("Images/Sprite/T_Luna_Portrait.png");
         background = new Texture("ChatGPT Image May 5, 2025, 01_30_18 PM.png");
     }

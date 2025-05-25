@@ -162,33 +162,40 @@ public class ChooseAbilityScreen implements Screen {
             case "Vitality": {
                 gameScreen.heart.setMaxHealth(gameScreen.heart.getMaxHealth() + 1);
                 gameScreen.heart.setHealth(gameScreen.heart.getHealth() + 1);
+                gameScreen.vitality++;
                 break;
             }
             case "Speedy": {
                 if (!gameScreen.speedAbility) {
                     gameScreen.speed = gameScreen.speed * 2;
                     gameScreen.speedAbility = true;
+                    gameScreen.speedy++;
                 }
                 break;
             }
             case "Amocrease": {
                 gameScreen.weapon.setMaxAmmo(gameScreen.weapon.getMaxAmmo() + 2);
+                gameScreen.amocrease++;
                 break;
             }
             case "Procrease": {
                 gameScreen.weapon.setProjectile(gameScreen.weapon.getProjectile() + 1);
+                gameScreen.procrease++;
                 break;
             }
             case "Damager": {
                 gameScreen.weapon.setDamage(gameScreen.weapon.getDamage() * 1.4f);
+                gameScreen.damager++;
                 break;
             }
             case "Firecrease": {
                 gameScreen.SHOOT_WAIT_TIME = gameScreen.SHOOT_WAIT_TIME * 2 / 3f;
+                gameScreen.firecrease++;
                 break;
             }
             case "Reload": {
                 gameScreen.weapon.setReloadTime(gameScreen.weapon.getReloadTime() * 0.75f);
+                gameScreen.reload++;
                 break;
             }
         }

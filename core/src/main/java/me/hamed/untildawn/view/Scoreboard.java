@@ -33,10 +33,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 
-/**
- * Scoreboard Screen: Displays top 10 players sorted by selected field.
- * Loads data from a JSON file with fields: username, score, kills, timeAlive (MM:SS), avatar.
- */
 public class Scoreboard implements Screen {
     private static final String USER_FILE = "/home/hamed/Documents/20-Minutes-Till-Dawn/assets/jsonFiles/users.json";
     SpriteBatch batch = new SpriteBatch();
@@ -82,7 +78,7 @@ public class Scoreboard implements Screen {
         table.row();
 
         sortBox = new SelectBox<>(skin);
-        sortBox.setItems("Score", "Kills", "Time Alive");
+        sortBox.setItems("Score", "Kills", "Time Alive", "Username");
         sortBox.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -132,6 +128,14 @@ public class Scoreboard implements Screen {
         switch (sortField) {
             case "Kills":      comparator = Comparator.comparingInt(pd -> pd.kills); break;
             case "Time Alive": comparator = Comparator.comparingInt(pd -> parseTime(pd.timeAlive)); break;
+            case "Username":
+                comparator = new Comparator<PlayerData>() {
+                    @Override
+                    public int compare(PlayerData p1, PlayerData p2) {
+                        return p2.username.compareToIgnoreCase(p1.username); // Swapped for reverse
+                    }
+                };
+                break;
             case "Score":
             default:            comparator = Comparator.comparingInt(pd -> pd.score); break;
         }

@@ -20,13 +20,13 @@ public class Main extends Game {
     private static float soundVolume = 0.5f;
     private boolean autoReload = true;
     private boolean blackAndWhite = false;
+    private String language = "english";
 
 
     @Override
     public void create() {
         main = this;
         batch = new SpriteBatch();
-//        main.setScreen(new PreGameMenu(GameAssetsManager.getInstance().getSkin()));
         main.setScreen(new LoadingMenu());
         Pixmap crosshairPixmap = new Pixmap(Gdx.files.internal("Images/Sprite/T_CursorSprite.png"));
         Cursor crosshairCursor = Gdx.graphics.newCursor(crosshairPixmap, 16, 16); // center hotspot
@@ -87,7 +87,16 @@ public class Main extends Game {
     public static float getSoundVolume() {
         return soundVolume;
     }
+
     public static void setSoundVolume(float soundVolume) {
         Main.soundVolume = soundVolume;
+    }
+
+    public String getLanguage() {
+        return language;
+    }
+
+    public void setLanguage(String language) {
+        this.language = language;
     }
 }

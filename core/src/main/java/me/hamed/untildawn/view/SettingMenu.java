@@ -18,6 +18,7 @@ public class SettingMenu implements Screen {
     private Slider volumeSlider;
     private Table table;
     private TextButtonDropdown<String> musics;
+    private TextButtonDropdown<String> language;
     private Label music;
     private Label soundEffect;
     private Slider soundEffectsVolumeSlider;
@@ -34,14 +35,14 @@ public class SettingMenu implements Screen {
         volumeSlider.setValue(Main.getSoundVolume()); // Default volume (50%)
         this.inGame = inGame;
         table = new Table(skin);
-        music = new Label("Music", skin);
-        soundEffect = new Label("Sound Effects", skin);
+        music = new Label((Main.getMain().getLanguage().equals("english")) ? Texts.MUSIC.getEnglish() : Texts.MUSIC.getFrench(), skin);
+        soundEffect = new Label((Main.getMain().getLanguage().equals("english")) ? Texts.SOUND_EFFECTS.getEnglish() : Texts.SOUND_EFFECTS.getFrench(), skin);
         soundEffectsVolumeSlider = new Slider(0f, 1f, 0.01f, false, skin);
         soundEffectsVolumeSlider.setValue(Main.getSoundEffects());
-        keyboard = new TextButton("Change Keyboard", skin);
-        autoReload = new TextButton("Auto Reload: " + (Main.getMain().isAutoReload() ? "ON" : "OFF"), skin);
-        blackAndWhite = new TextButton("Black and White:" + (Main.getMain().isBlackAndWhite() ? "ON" : "OFF"), skin);
-        back = new TextButton("Back", skin);
+        keyboard = new TextButton((Main.getMain().getLanguage().equals("english")) ? Texts.CHANGE_KEYBOARD.getEnglish() : Texts.CHANGE_KEYBOARD.getFrench(), skin);
+        autoReload = new TextButton((Main.getMain().getLanguage().equals("english")) ? Texts.AUTO_RELOAD.getEnglish() : Texts.LOGIN_MENU.getFrench() + " " + (Main.getMain().isAutoReload() ? (Main.getMain().getLanguage().equals("english")) ? Texts.ON.getEnglish() : Texts.ON.getFrench() : (Main.getMain().getLanguage().equals("english")) ? Texts.OFF.getEnglish() : Texts.OFF.getFrench()), skin);
+        blackAndWhite = new TextButton((Main.getMain().getLanguage().equals("english")) ? Texts.BLACK_AND_WHITE.getEnglish() : Texts.BLACK_AND_WHITE.getFrench() + " " + (Main.getMain().isBlackAndWhite() ? (Main.getMain().getLanguage().equals("english")) ? Texts.ON.getEnglish() : Texts.ON.getFrench() : (Main.getMain().getLanguage().equals("english")) ? Texts.OFF.getEnglish() : Texts.OFF.getFrench()), skin);
+        back = new TextButton((Main.getMain().getLanguage().equals("english")) ? Texts.BACK.getEnglish() : Texts.BACK.getFrench(), skin);
         this.gameScreen = gameScreen;
     }
 
@@ -74,6 +75,22 @@ public class SettingMenu implements Screen {
                 }
             }
         });
+
+        language = new TextButtonDropdown<>("Language", GameAssetsManager.getInstance().getSkin(), stage, new TextButtonDropdown.SelectionListener<String>() {
+
+            @Override
+            public void onSelected(String item) {
+
+                if (item.equals("English")) {
+                    Main.getMain().setLanguage("english");
+                    Main.getMain().setScreen(new SettingMenu(GameAssetsManager.getInstance().getSkin(), inGame, gameScreen));
+                } else if (item.equals("French")) {
+                    Main.getMain().setLanguage("french");
+                    Main.getMain().setScreen(new SettingMenu(GameAssetsManager.getInstance().getSkin(), inGame, gameScreen));
+                }
+            }
+        });
+        language.setItems(new Array<>(new String[]{"English", "French"}));
         musics.setItems(new Array<>(new String[]{"Original Theme", "Cristal Castles Empathy", "The Last Of Us Theme"}));
         musics.setSize(550, 110);
         table.add(musics).size(550, 110);
@@ -104,6 +121,9 @@ public class SettingMenu implements Screen {
         });
         table.row().pad(15);
         table.add(keyboard).size(550, 110);
+        table.row().pad(15);
+        language.setSize(550, 110);
+        table.add(language).size(550, 110);
         table.row().pad(15);
         autoReload.addListener(new ChangeListener() {
             @Override

@@ -38,18 +38,17 @@ public class LoginMenu implements Screen {
 
     public LoginMenu(Skin skin) {
         table = new Table();
-        field = new TextField("username", skin);
-        label = new Label("Login Menu", skin);
-        button = new TextButton("Enter Pregame Menu", skin);
-        forgetPassButton = new TextButton("Forget Password", skin);
-        field = new TextField("username", skin);
-        passField = new TextField("password", skin);
+        label = new Label((Main.getMain().getLanguage().equals("english")) ? Texts.LOGIN_MENU.getEnglish() : Texts.LOGIN_MENU.getFrench(), skin);
+        button = new TextButton((Main.getMain().getLanguage().equals("english")) ? Texts.ENTER_PREGAME_MENU.getEnglish() : Texts.ENTER_PREGAME_MENU.getFrench(), skin);
+        forgetPassButton = new TextButton((Main.getMain().getLanguage().equals("english")) ? Texts.FORGET_PASSWORD.getEnglish() : Texts.FORGET_PASSWORD.getFrench(), skin);
+        field = new TextField((Main.getMain().getLanguage().equals("english")) ? Texts.USERNAME.getEnglish() : Texts.USERNAME.getFrench(), skin);
+        passField = new TextField((Main.getMain().getLanguage().equals("english")) ? Texts.PASSWORD.getEnglish() : Texts.PASSWORD.getFrench(), skin);
         font = new BitmapFont(Gdx.files.internal("Fonts/Font/score.fnt"));
         background = new Texture("ChatGPT Image May 5, 2025, 01_30_18 PM.png");
         abby = new Texture("Images/Sprite/T_Abby_Portrait.png");
         errorLabel = new Label("", skin);
         checkBox = new CheckBox("", skin);
-        backButton = new TextButton("Back", skin);
+        backButton = new TextButton((Main.getMain().getLanguage().equals("english")) ? Texts.BACK.getEnglish() : Texts.BACK.getFrench(), skin);
     }
 
 

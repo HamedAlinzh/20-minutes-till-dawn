@@ -1,10 +1,10 @@
 [
     {
-        "kills": 1,
-        "score": "1200",
+        "kills": 149,
+        "score": "96552",
         "password": "1",
-        "timeAlive": "20:00",
-        "avatar": 1,
+        "timeAlive": "10:48",
+        "avatar": 2,
         "username": "1"
     },
     {
@@ -30,5 +30,13 @@
         "timeAlive": "10:00",
         "avatar": 3,
         "username": "kil"
+    },
+    {
+        "kills": 0,
+        "score": 0,
+        "password": "Qwert!123",
+        "timeAlive": "00:00",
+        "avatar": 1,
+        "username": "Qwert"
     }
 ]

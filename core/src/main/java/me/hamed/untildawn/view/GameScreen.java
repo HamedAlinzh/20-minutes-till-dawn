@@ -130,9 +130,19 @@ public class GameScreen implements Screen {
 
     boolean playAsGuest;
     private InputProcessor gameInputProcessor;
-
+    ShapeRenderer renderer = new ShapeRenderer();
 
     ShaderProgram grayscaleShader;
+    boolean circle = false;
+
+
+    int firecrease = 0;
+    int procrease = 0;
+    int speedy = 0;
+    int vitality = 0;
+    int amocrease = 0;
+    int damager = 0;
+    int reload = 0;
 
 
 
@@ -911,6 +921,19 @@ public class GameScreen implements Screen {
             screenshotPixmap.dispose();
             Main.getMain().setScreen(new GameOverMenu(pausedBg, countdownTime, kills, playAsGuest, heart.getHealth(), false));
         }
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.M)) {
+            circle = !circle;
+        }
+
+        if (circle) {
+            Gdx.gl.glEnable(GL20.GL_BLEND);
+            renderer.begin(ShapeRenderer.ShapeType.Filled);
+            renderer.setColor(1, 1, 1, 0.05f);
+            renderer.circle(playerDrawX + 13, playerDrawY + 10, 150);
+            renderer.end();
+            Gdx.gl.glDisable(GL20.GL_BLEND);
+        }
     }
 
     private void handleInput(float delta) {
@@ -919,7 +942,6 @@ public class GameScreen implements Screen {
             isRunning = true;
             if (!collision) {
                 player.position.y += speed * delta;
-//                worldY += speed * delta;
             }
 
         }
@@ -927,7 +949,6 @@ public class GameScreen implements Screen {
             isRunning = true;
             if (!collision) {
                 player.position.y -= speed * delta;
-//                worldY -= speed * delta;
             }
         }
         if (Gdx.input.isKeyPressed(KeyBindings.get(KeyBindings.LEFT))) {
@@ -939,7 +960,6 @@ public class GameScreen implements Screen {
             isRunning = true;
             if (!collision) {
                 player.position.x -= speed * delta;
-//                worldX -= speed * delta;
             }
         }
         if (Gdx.input.isKeyPressed(KeyBindings.get(KeyBindings.RIGHT))) {
@@ -951,7 +971,6 @@ public class GameScreen implements Screen {
             isRunning = true;
             if (!collision) {
                 player.position.x += speed * delta;
-//                worldX += speed * delta;
             }
         }
     }

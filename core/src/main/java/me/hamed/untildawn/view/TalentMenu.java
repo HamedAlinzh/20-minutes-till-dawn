@@ -11,11 +11,9 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import me.hamed.untildawn.Main;
+import me.hamed.untildawn.model.GameAssetsManager;
 
-/**
- * Talent Menu Screen: Lists heroes, controls, abilities, and cheat codes.
- * Uses 2/3 of screen width for content and scrollable layout.
- */
 public class TalentMenu implements Screen {
     private Stage stage;
     private Skin skin;
@@ -23,9 +21,15 @@ public class TalentMenu implements Screen {
     private ScrollPane scrollPane;
     private TextureRegion background = new TextureRegion(new Texture(Gdx.files.internal("Images/Diamond.png")));
     SpriteBatch batch = new SpriteBatch();
+    private boolean fromGame = false;
+    private GameScreen gameScreen;
+    private Texture pauseBg;
 
-    public TalentMenu(Skin skin) {
+    public TalentMenu(Skin skin, boolean fromGame, GameScreen gameScreen, Texture pauseBg) {
+        this.fromGame = fromGame;
         this.skin = skin;
+        this.gameScreen = gameScreen;
+        this.pauseBg = pauseBg;
     }
 
     @Override
@@ -33,19 +37,15 @@ public class TalentMenu implements Screen {
         stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(stage);
 
-        // Main layout table: fillHeight, content on left 2/3, background on right 1/3
         Table root = new Table();
         root.setFillParent(true);
-        // two columns: content 2/3, empty 1/3 for background
         root.columnDefaults(0).width(Value.percentWidth(2f/3f, root));
         root.columnDefaults(1).width(Value.percentWidth(1f/3f, root));
 
-        // Content table inside scroll pane
         contentTable = new Table(skin);
         contentTable.top().pad(20);
         contentTable.defaults().pad(10).expandX().left();
 
-        // Section: Heroes
         Label heroesTitle = new Label("=== Heroes ===", skin, "default");
         heroesTitle.setColor(Color.CYAN);
         heroesTitle.setFontScale(1.2f);
@@ -123,7 +123,6 @@ public class TalentMenu implements Screen {
         contentTable.row();
         contentTable.row();
 
-        // Section: Cheat Codes
         Label cheatsTitle = new Label("=== Cheat Codes ===", skin);
         cheatsTitle.setColor(Color.PINK);
         cheatsTitle.setFontScale(1.2f);
@@ -148,8 +147,6 @@ public class TalentMenu implements Screen {
         scrollPane.setFadeScrollBars(false);
         scrollPane.setFillParent(true);
         root.add(scrollPane);
-
-        // Right empty cell for background (could add image here)
         root.add().expand().fill();
 
         stage.addActor(root);
@@ -164,6 +161,14 @@ public class TalentMenu implements Screen {
         batch.end();
         stage.act(delta);
         stage.draw();
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
+            if (!fromGame) {
+                Main.getMain().setScreen(new MainMenu(GameAssetsManager.getInstance().getSkin()));
+            } else {
+                Main.getMain().setScreen(new PauseMenu(GameAssetsManager.getInstance().getSkin(), gameScreen, pauseBg));
+            }
+        }
     }
 
     @Override public void resize(int width, int height) { stage.getViewport().update(width, height, true); }
