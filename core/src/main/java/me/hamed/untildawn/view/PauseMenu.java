@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
@@ -21,9 +22,18 @@ public class PauseMenu implements Screen {
 
     Stage uiStage = new Stage(new ScreenViewport());
 
+
+    Label reload;
+    Label amocrease;
+    Label firecrease;
+    Label procrease;
+    Label speedy;
+    Label vitality;
+    Label damager;
     TextButton resumeButton;
     TextButton settingsButton;
     TextButton giveUp;
+    TextButton talentsButton;
     Texture pausedBg;
     SpriteBatch batch = new SpriteBatch();
     TextureRegion pause;
@@ -35,6 +45,7 @@ public class PauseMenu implements Screen {
     private float stateTime;
     TextureRegion texture;
     Animation deathAnimation = new Animation(0.35f, GameAssetsManager.getInstance().getIdleFrames("Death"));
+    Table abilityTable;
 
     public PauseMenu(Skin skin, GameScreen gameScreen, Texture pausedBg) {
 
@@ -45,6 +56,16 @@ public class PauseMenu implements Screen {
         this.resumeButton = new TextButton("Resume", skin);
         this.settingsButton = new TextButton("Settings", skin);
         this.giveUp = new TextButton("Give Up", skin);
+        this.talentsButton = new TextButton("Talent", skin);
+        this.abilityTable = new Table(skin);
+        reload = new Label("Reload Level: " + gameScreen.reload, skin);
+        amocrease = new Label("Amocrease Level: " + gameScreen.amocrease, skin);
+        firecrease = new Label("Firecrease Level: " + gameScreen.firecrease, skin);
+        procrease = new Label("Procrease Level: " + gameScreen.procrease, skin);
+        speedy = new Label("Speedy Level: " + gameScreen.speedy, skin);
+        vitality = new Label("Vitality: " + gameScreen.vitality, skin);
+        damager = new Label("Damager Level: " + gameScreen.damager, skin);
+
     }
 
     @Override
@@ -65,13 +86,31 @@ public class PauseMenu implements Screen {
         pause = new TextureRegion(pausedBg);
         pause.flip(false, true);
 
+        abilityTable.setPosition(Gdx.graphics.getWidth() / 6f, Gdx.graphics.getHeight() / 2f);
+        abilityTable.add(reload);
+        abilityTable.row().pad(15);
+        abilityTable.add(amocrease);
+        abilityTable.row().pad(15);
+        abilityTable.add(firecrease);
+        abilityTable.row().pad(15);
+        abilityTable.add(procrease);
+        abilityTable.row().pad(15);
+        abilityTable.add(speedy);
+        abilityTable.row().pad(15);
+        abilityTable.add(vitality);
+        abilityTable.row().pad(15);
+        abilityTable.add(damager);
+        abilityTable.row().pad(15);
         table.setPosition(Gdx.graphics.getWidth() / 2f, Gdx.graphics.getHeight() / 2f);
         table.add(resumeButton);
         table.row().pad(20);
         table.add(settingsButton);
         table.row().pad(20);
+        table.add(talentsButton);
+        table.row().pad(20);
         table.add(giveUp);
         uiStage.addActor(table);
+        uiStage.addActor(abilityTable);
 
     }
 
@@ -86,6 +125,9 @@ public class PauseMenu implements Screen {
         }
         if (settingsButton.isChecked()) {
             Main.getMain().setScreen(new SettingMenu(GameAssetsManager.getInstance().getSkin(), true, gameScreen));
+        }
+        if (talentsButton.isChecked()) {
+            Main.getMain().setScreen(new TalentMenu(GameAssetsManager.getInstance().getSkin(), true, gameScreen, pausedBg));
         }
         if (!gaveUp && giveUp.isChecked()) {
             gaveUp = true;

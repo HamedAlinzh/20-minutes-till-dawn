@@ -55,14 +55,14 @@ public class SignUpMenu implements Screen {
 
     public SignUpMenu(Skin skin) {
         table = new Table();
-        field = new TextField("username", skin);
-        questionField = new TextField("What is favorite breakfast fish?", skin);
-        label = new Label("Sign Up Menu", skin);
-        avatarLabel = new Label("Choose Your Avatar", skin);
-        loginButton = new TextButton("Login", skin);
-        guestButton = new TextButton("Play As A Guest", skin);
-        button = new TextButton("Enter Main Menu", skin);
-        passField = new TextField("password", skin);
+        field = new TextField((Main.getMain().getLanguage().equals("english")) ? Texts.USERNAME.getEnglish() : Texts.USERNAME.getFrench(), skin);
+        questionField = new TextField((Main.getMain().getLanguage().equals("english")) ? Texts.QUESTION.getEnglish() : Texts.QUESTION.getFrench(), skin);
+        label = new Label((Main.getMain().getLanguage().equals("english")) ? Texts.SIGN_UP_LABEL.getEnglish() : Texts.SIGN_UP_LABEL.getFrench(), skin);
+        avatarLabel = new Label((Main.getMain().getLanguage().equals("english")) ? Texts.AVATAR_LABEL.getEnglish() : Texts.AVATAR_LABEL.getFrench(), skin);
+        loginButton = new TextButton((Main.getMain().getLanguage().equals("english")) ? Texts.LOGIN.getEnglish() : Texts.LOGIN.getFrench(), skin);
+        guestButton = new TextButton((Main.getMain().getLanguage().equals("english")) ? Texts.PLAY_AS_GUEST.getEnglish() : Texts.PLAY_AS_GUEST.getFrench(), skin);
+        button = new TextButton((Main.getMain().getLanguage().equals("english")) ? Texts.ENTER_MAIN_MENU.getEnglish() : Texts.ENTER_MAIN_MENU.getFrench(), skin);
+        passField = new TextField((Main.getMain().getLanguage().equals("english")) ? Texts.PASSWORD.getEnglish() : Texts.PASSWORD.getFrench(), skin);
         font = new BitmapFont(Gdx.files.internal("Fonts/Font/score.fnt"));
         background = new Texture("ChatGPT Image May 5, 2025, 01_30_18 PM.png");
         scarlett = new Texture("Images/Sprite/T_Scarlett_Portrait.png");
@@ -183,7 +183,7 @@ public class SignUpMenu implements Screen {
             @Override
             public void keyboardFocusChanged(FocusEvent event, Actor actor, boolean focused) {
                 if (!focused && passField.getText().isEmpty()) {
-                    passField.setText("password");
+                    passField.setText((Main.getMain().getLanguage().equals("english")) ? Texts.PASSWORD.getEnglish() : Texts.PASSWORD.getFrench());
                 }
             }
         });
@@ -204,7 +204,7 @@ public class SignUpMenu implements Screen {
             @Override
             public void keyboardFocusChanged(FocusEvent event, Actor actor, boolean focused) {
                 if (!focused && field.getText().isEmpty()) {
-                    field.setText("username");
+                    field.setText((Main.getMain().getLanguage().equals("english")) ? Texts.USERNAME.getEnglish() : Texts.USERNAME.getFrench());
                 }
             }
         });
@@ -225,7 +225,7 @@ public class SignUpMenu implements Screen {
             @Override
             public void keyboardFocusChanged(FocusEvent event, Actor actor, boolean focused) {
                 if (!focused && questionField.getText().isEmpty()) {
-                    questionField.setText("What is favorite breakfast fish?");
+                    questionField.setText((Main.getMain().getLanguage().equals("english")) ? Texts.QUESTION.getEnglish() : Texts.QUESTION.getFrench());
                 }
             }
         });

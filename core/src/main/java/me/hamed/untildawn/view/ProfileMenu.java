@@ -8,6 +8,7 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import me.hamed.untildawn.Main;
@@ -33,6 +34,9 @@ public class ProfileMenu implements Screen {
     private TextButton deleteAccountButton;
     private TextButton back;
     private final Texture raven;
+
+    DragAndDrop dragAndDrop = new DragAndDrop();
+    Image dropTarget = new Image(new Texture("0.png"));
 
     Texture avatar1Texture = new Texture(Gdx.files.internal("0.png"));
     Texture avatar2Texture = new Texture(Gdx.files.internal("1.png"));
@@ -67,6 +71,23 @@ public class ProfileMenu implements Screen {
     public void show() {
         stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(stage);
+        dropTarget.setPosition(400, 100);
+        stage.addActor(dropTarget);
+
+
+        dragAndDrop.addTarget(new DragAndDrop.Target(dropTarget) {
+            @Override
+            public boolean drag(DragAndDrop.Source source, DragAndDrop.Payload payload, float x, float y, int pointer) {
+                return true;
+            }
+
+            @Override
+            public void drop(DragAndDrop.Source source, DragAndDrop.Payload payload, float x, float y, int pointer) {
+
+            }
+        });
+
+
         Table table = new Table();
         table.left().padLeft(Gdx.graphics.getWidth() / 5f).padBottom(Gdx.graphics.getHeight() / 5f);
         table.setFillParent(true);

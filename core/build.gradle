@@ -3,6 +3,11 @@ eclipse.project.name = appName + '-core'
 dependencies {
   implementation 'org.json:json:20240303' // latest version
 }
+
+dependencies {
+  implementation 'org.xerial:sqlite-jdbc:3.36.0.3'
+}
+
 dependencies {
   api "com.badlogicgames.ashley:ashley:$ashleyVersion"
   api "com.badlogicgames.box2dlights:box2dlights:$box2dlightsVersion"

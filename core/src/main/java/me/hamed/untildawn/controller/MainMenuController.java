@@ -24,7 +24,7 @@ public class MainMenuController {
     }
 
     public static void talenMenu() {
-        Main.getMain().setScreen(new TalentMenu(GameAssetsManager.getInstance().getSkin()));
+        Main.getMain().setScreen(new TalentMenu(GameAssetsManager.getInstance().getSkin(), false, null, null));
     }
 
     public static void pregameMenu() {
